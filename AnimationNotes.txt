@@ -1,0 +1,51 @@
+key_frame_list.usage == 2
+LMTKeyframeDef.bufferType == 0,8,10
+buffer type 1 is of interest because it should have issues with the reference frame
+reference frame is the world matrix translation of the bone at the start of the animation.
+Multiple of a bone ID within the same action are used to have 2 animations overlapping when they should be sequential, read backwards
+
+Frame -1 to be used as the reference frame for the transform
+When it's a basis choice the reference should be null (Check)
+Frame Index is actually frames towards NEXT FRAME
+Animations feel like they are read back to front, specially with folded animations
+
+Trans Rot at action level feel like they modify the armature itself but blender dislikes this sort of thing. Need to parent mesh to object itself.
+
+
+header
+action_headers (consecutive)
+BlockPerCommonOffset:
+	key_ends (consecutive) (per action inter-referencing)
+	buffer (consecutive, int32 padding per buffer) (per action inter-referencing)
+	timl (consecutive)
+		header (int128 padding to types)
+		types (consecutive) (padding)
+		transforms (consecutive) (int128 padding per type)
+		keyframe (int128 padded per transform, consecutive)
+padding to next LMT
+		
+HEADER OFFSET
+OFFSET OFFSET pad
+A_HEAD A_HEAD A_HEAD A_HEAD A_HEAD A_HEAD A_HEAD
+A_HEAD A_HEAD A_HEAD A_HEAD pad
+KBR0 KBR0 KBR0 pad
+BOUNDS0 BOUNDS0 BOUNDS0 pad
+BUFFER0 BUFFER0 BUFFER0 pad
+TIML
+		
+LMT point to another LMT Entry TIML but it's always wholesale, the duplication happens at the Entry to Data pointing. Below Data the TIML are basically deduplicated.
+		
+timl (consecutive)
+offsets
+data (int128 padding to types, blocks laid out one after the other)
+	types (consecutive) (padding at end)
+	transforms (consecutive) (int128 padding per type)
+	keyframe (int128 padded per transform, consecutive)
+	
+DATA pad 
+TYPE TYPE TYPE TYPE pad 
+TRS TRS TRS pad TRS TRS TRS pad TRS TRS pad 
+KF KF KF KF KF KF PAD KF KF KF KF PAD KF KF KF KF PAD
+KF KF KF KF KF KF PAD KF KF KF KF PAD KF KF KF KF PAD
+KF KF KF KF KF KF PAD KF KF KF KF PAD
+DATA ...
