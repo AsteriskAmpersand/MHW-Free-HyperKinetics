@@ -107,7 +107,6 @@ class LMTBoneDataHeader(C.PyCStruct):
         if self.bufferOffset:            
             stream.seek(self.bufferOffset)
             length = len(self.bufferTypeClass())
-            #print(stream.peek(16))
             keyframes = ExtensibleList([self.bufferTypeClass().marshall(stream) for _ in range(self.bufferSize//length)])
         if self.lerpOffset:
             stream.seek(self.lerpOffset)
@@ -267,7 +266,6 @@ class LMT():
         KbrBodies = {}
         TIMLOffsets = {}
         for action in entries:
-            #output_print("Action %03d"%ix)
             action.bones = []
             if action.fcurveOffset and action.fcurveOffset not in KbrBodies:
                 self.loadAction(data,action,KbrBodies)
@@ -373,14 +371,20 @@ class LMT():
                 action.id = ix
         self.ActionHeaders = list(filter(lambda x: x is not None,actionEntries))
         return self
-    def inject(self,actionEntries):
-        for ix,action in enumerate(actionEntries):
-            if action is not None:
-                self.ActionHeaders[ix] = action
+    def injectFile(self,lmt):
+        used = set()
+        injection = {action.id:action for action in lmt.ActionHeaders}
+        existent = {action.id:action for action in self.ActionHeaders}
+        if max(injection) >= self.entryCount():
+            raise KeyError("Injection IDs exceed entry Count")
+        existent.update(injection)
+        self.ActionHeaders = [existent[e] for e in sorted(existent)]
     def serialize(self):
         if self.__serializationStructure__ is None:
             self.calculateOffsets()
         return b''.join(map(lambda x: x.serialize(),self.__serializationStructure__))
+    def entryCount(self):
+        return self.Header.entryCount
     
 def parseSectionalLMT(filepath,indexSet,parents,siblings,*args,**kwargs):
     return LMT.parseFileSectional(filepath, indexSet,parents,siblings)
@@ -429,6 +433,11 @@ if __name__ in '__main__':
     for ix,file in enumerate(filelist):
         l = LMT.parseFile(file)
         print(ix,file)
+        print(l.Header.entryCount)
+        print(len(l.ActionHeaders))
+        print(len([a for a in l.ActionHeaders if a is not None]))
+        continue
+        
         #l = LMT.parseFileSectional(file,set([1,2,3]),parents=True,siblings=True)
         #raise
         #continue

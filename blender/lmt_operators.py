@@ -6,7 +6,7 @@ Created on Mon Jul 26 22:00:26 2021
 """
 import bpy
 from .timl_param_utils import timlNameToProp,timlPropToName
-from .blenderOps import customizeFCurve,foldFCurve,addKeyframe,getActions,fetchFreeHKCustom,updateDopesheet
+from .blenderOps import customizeFCurve,foldFCurve,addKeyframe,getActions,fetchFreeHKCustom,updateDopesheet,setEncodingType,setMaxEncoding
 from .tetherOps import (transferTether, updateAnimationNames,updateAnimationBoneFunctions,
                         completeMissingChannels,synchronizeKeyframes,resampleAction,resampleFCurve,
                         getBoneFromPath)
@@ -123,9 +123,10 @@ class ClearTether(_TransferTether,bpy.types.Operator):
 class MappedActionOperator():
     actionFetch = getActions
     tetherless = False
+    actionType = "LMT_Action"
     def execute(self,context):
         errors = []
-        target_actions = self.actionFetch(context,"LMT_Action")
+        target_actions = self.actionFetch(context,self.actionType)
         for action in target_actions:            
             armature = action.freehk.tetherFrame
             if armature or self.tetherless:
@@ -206,6 +207,22 @@ class ResampleSelectedFCurve(MappedActionOperator,bpy.types.Operator):
             if fcurve.select:
                 resampleFCurve(fcurve,action.freehk.resampleRate) 
 
+class ResampleSelectedTIMLFCurve(MappedActionOperator,bpy.types.Operator):
+    bl_idname = "freehk.resample_timl_fcurve"
+    bl_label = "Resample Keyframes"
+    bl_options = {'REGISTER', 'PRESET', 'UNDO'}
+    bl_description = "Adds keyframes if distance between keyframe pair larger than sample rate."
+    tetherless = True
+    actionType = "TIML_Action"
+    #limit = bpy.props.BoolProperty(name = "Limit", default = True, options={'HIDDEN'} )
+    def __init__(self,*args,**kwargs):
+        self.limit = True
+        super().__init__(*args,**kwargs)
+    def mappedOperator(self,armature,action):        
+        for fcurve in action.fcurves:
+            if fcurve.select:
+                resampleFCurve(fcurve,action.freehk.resampleRate) 
+
 class GlobalEnableFCurves(MappedActionOperator,bpy.types.Operator):
     bl_idname = "freehk.create_fcurve_action"
     bl_label = "Enable FreeHK FCurves"
@@ -223,6 +240,29 @@ class GlobalEnableFCurves(MappedActionOperator,bpy.types.Operator):
                     bone = None
                 customizeFCurve(fcurve,0,bone if bone is not None else -2)
                 #customizeFCurve
+
+class ClearEncoding(MappedActionOperator,bpy.types.Operator):
+    bl_idname = "freehk.clear_buffer_quality"
+    bl_label = "Clear Encoding Types"
+    bl_options = {'REGISTER', 'PRESET', 'UNDO'}
+    bl_description = "Sets the encoding of all fcurves witthout a buffer on the action to the highest quality setting."
+    tetherless = True
+    limit = bpy.props.BoolProperty(name = "Limit", default = True, options={'HIDDEN'} )
+    def mappedOperator(self,armature,action):
+        for fcurve in action.fcurves:
+            setEncodingType(fCurve,0)
+
+class MaximizeQuality(MappedActionOperator,bpy.types.Operator):
+    bl_idname = "freehk.maximize_buffer_quality"
+    bl_label = "Max FCurve Encoding Quality"
+    bl_options = {'REGISTER', 'PRESET', 'UNDO'}
+    bl_description = "Sets the encoding of all fcurves witthout a buffer on the action to the highest quality setting."
+    tetherless = True
+    limit = bpy.props.BoolProperty(name = "Limit", default = True, options={'HIDDEN'} )
+    def mappedOperator(self,armature,action):
+        for fcurve in action.fcurves:
+            if not fetchEncodingType(fcurve):
+                setMaxEncoding(fcurve)
 
 class CheckActionForExport(MappedActionOperator,bpy.types.Operator):
     bl_idname = "freehk.check_export"
@@ -255,7 +295,8 @@ class CheckActionForExport(MappedActionOperator,bpy.types.Operator):
         
 classes = [
     CreateFCurve,FoldFCurve,AddKeyframes,TransferTether,TransferTetherSilent,ClearTether,UpdateBoneFunctions,UpdateAnimationNames,
-    CompleteChannels,SynchronizeKeyframes,ResampleFCurve,ResampleSelectedFCurve,GlobalEnableFCurves,CheckActionForExport
+    CompleteChannels,SynchronizeKeyframes,ResampleFCurve,ResampleSelectedFCurve,GlobalEnableFCurves,CheckActionForExport,
+    ResampleSelectedTIMLFCurve, ClearEncoding, MaximizeQuality
 ]
 
 def register():

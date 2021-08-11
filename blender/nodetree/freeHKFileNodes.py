@@ -136,6 +136,7 @@ class FreeHKOutputNode(FreeHKNode):
 
 class LMTFileNode(Node, FreeHKOutputNode):
     '''LMT Output Node'''
+    entryCountError = "G_INJECTION_ENTRY_COUNT"
     bl_idname = 'LMTFileNode'
     bl_label = "LMT Output Node"
     bl_icon = 'GREASEPENCIL'
@@ -174,6 +175,7 @@ class TIMLFileNode(Node, FreeHKOutputNode):
         subtype = 'FILE_PATH'
         )
     entryCount = bpy.props.IntProperty(name="Entry Count", default = -1)
+    inject = False
     exec(outputProps)
 
     def basicStructure(self):
@@ -186,7 +188,7 @@ class TIMLFileNode(Node, FreeHKOutputNode):
 #TODO - Basic structure is list of TIMLs
 class EFXFileNode(Node, FreeHKOutputNode):
     '''EFX Output Node'''
-    entryCountError = "G_EFX_HIGH_ENTRY_COUNT"
+    entryCountError = "G_INJECTION_ENTRY_COUNT"
     bl_idname = 'EFXFileNode'
     bl_label = "EFX Output Node"
     bl_icon = 'GREASEPENCIL'
@@ -202,6 +204,7 @@ class EFXFileNode(Node, FreeHKOutputNode):
     inputType = "FreeHKEFXEntrySocket"
     inputName = "EFX Entry"
     inputStr = "EFX_Entry"
+    addon_key = __package__.split('.')[0]
     def draw_buttons(self, context, layout):
         layout.prop(self, "outputPath")
         layout.prop(self, "inject")        
@@ -211,13 +214,14 @@ class EFXFileNode(Node, FreeHKOutputNode):
             timlOffsets = TIML.getTimlOffsets(file)
         return len(timlOffsets)
     def basicStructure(self):
-        return ExtensibleList.ExtensibleList()
-    def export(self):
-        self.entryCount = self.calculateEntryCount()
-        return super().export()
-    def fixEntryCount(self,*args,**kwargs):
-        return self.omitEntries(*args,**kwargs)
-
+        addon = bpy.context.user_preferences.addons[self.addon_key]
+        retrograde = addon.preferences.preferences.dumb_efx_timl        
+        with open(self.outputPath,"rb") as inf:
+            if retrograde:
+                return TIML.Legacy_TIML_EFX().marshall(inf)                
+            else:
+                return TIML.TIML_EFX().marshall(inf)
+    
 class JSONFileNode(Node,FreeHKOutputNode):
     '''JSON Output Node'''
     bl_idname = 'JSONFileNode'

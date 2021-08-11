@@ -34,6 +34,10 @@ pcoll.load("FREEHK_RESAMPLE", str(Path(__file__).parent.parent/"icons/FreeHKIcon
 pcoll.load("FREEHK_RESAMPLE_TOTAL", str(Path(__file__).parent.parent/"icons/FreeHKIconResampleAll.png"), "IMAGE")
 pcoll.load("FREEHK_CHECK", str(Path(__file__).parent.parent/"icons/FreeHKIconCheckExport.png"), "IMAGE")
 pcoll.load("FREEHK_CHECK_TOTAL", str(Path(__file__).parent.parent/"icons/FreeHKIconCheckExportAll.png"), "IMAGE")
+pcoll.load("FREEHK_CLEAR_ENCODE", str(Path(__file__).parent.parent/"icons/FreeHKIconClearQuality.png"), "IMAGE")
+pcoll.load("FREEHK_CLEAR_ENCODE_TOTAL", str(Path(__file__).parent.parent/"icons/FreeHKIconClearQualityAll.png"), "IMAGE")
+pcoll.load("FREEHK_MAX_ENCODE", str(Path(__file__).parent.parent/"icons/FreeHKIconMaxQuality.png"), "IMAGE")
+pcoll.load("FREEHK_MAX_ENCODE_TOTAL", str(Path(__file__).parent.parent/"icons/FreeHKIconMaxQualityAll.png"), "IMAGE")
 
 pcoll.load("FREEHK_NONE_TYPE", str(Path(__file__).parent.parent/"icons/FreeHKIconNoneType.png"), "IMAGE")
 pcoll.load("FREEHK_LMT_TYPE", str(Path(__file__).parent.parent/"icons/FreeHKIconLMTType.png"), "IMAGE")

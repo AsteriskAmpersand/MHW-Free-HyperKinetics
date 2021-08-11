@@ -108,6 +108,24 @@ def setBoneFunction(fcurve,boneFunction):
         return
     customizeFCurve(fcurve,0,boneFunction)
 
+def setEncodingType(fcurve,encoding):
+    mod = fetchFreeHKCustom(fcurve)                     
+    if mod:
+        mod.min_x = encoding
+        return
+    customizeFCurve(fcurve,encoding,-2)
+
+def setMaxEncoding(fcurve):
+    path,transform = breakPath(fcurve.data_path)
+    encodingMap = {"rotation_quaternion":6,
+                   "scale":3,
+                   "location":3,
+                   "rotation_euler":6     
+                }
+    if transform in encodingMap:
+        setEncodingType(fcurve,encodingMap[transform])
+    return
+
 def replaceBoneName(oldname,newname):
     transform = oldname.split(".")[-1]
     return 'pose.bones["%s"].%s'%(newname,transform)    

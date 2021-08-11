@@ -60,7 +60,7 @@ class LMTImporter(Operator,ImportHelper,ImporterBase):
         base = set()
         for s in (set(range(int(group.split("-")[0]),int(group.split("-")[-1])+1)) for group in filterString.split(",")):
             base = base.union(s)
-        return sorted(base)
+        return base#sorted(base)
     
     #Skeleton target is scene wide property and has to be drawn explicitly (coincidentally this allows "remembering")
     def draw(self,context):

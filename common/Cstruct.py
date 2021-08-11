@@ -192,8 +192,8 @@ def readBinary(typing,stream):
     cstruct = Cstruct({"var":typing})
     return cstruct.marshall(stream)["var"]       
 def writeBinary(typing,data):
-    cstruct = Cstruct().construct({"var":typing})
-    return cstruct.serialize()
+    bindata = Cstruct({"var":typing}).serialize({"var":data})
+    return bindata
 class RegisteredClass(type):
     def __new__(cls, clsname, superclasses, attributedict):
         newclass = type.__new__(cls, clsname, superclasses, attributedict)

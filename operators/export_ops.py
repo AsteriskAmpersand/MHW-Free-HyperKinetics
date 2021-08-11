@@ -37,13 +37,23 @@ class TreeExporter(bpy.types.Operator):
         self.FileExport(node)
     def FileExport(self,node):        
         nodeStructure = node.export()
+        if node.inject:
+            try:
+                masterFile = type(nodeStructure)().parseFile(node.outputPath)
+                masterFile.injectFile(nodeStructure)
+                nodeStructure = masterFile
+            except IndexError:
+                node.error_handler.takeOwnership(node)
+                node.error_handler.append("G_INJECTION_ENTRY_COUNT",node.name,masterFile.entryCount())
+                node.error_handler.logUnsolved()        
         if self.addon_props.output_log:
             node.error_handler.writeLog(node.outputPath,self.addon_props.output_log_folder)
         node.error_handler.display()
         if node.error_handler.verifyExport():            
             filedata = nodeStructure.serialize()
-            with open(node.outputPath,"wb") as outf:
-                outf.write(filedata)
+            
+        with open(node.outputPath,"wb") as outf:
+            outf.write(filedata)
     
     def generateTIML(self,timlData):
         timl = TIML.TIML().construct()
@@ -51,6 +61,8 @@ class TreeExporter(bpy.types.Operator):
         return timl        
         
     def EFXExport(self,node):
+        self.FileExport(node)
+        """
         subTimls = node.export()
         with open(node.outputPath,"rb") as inf:
             file = inf.read()
@@ -72,7 +84,8 @@ class TreeExporter(bpy.types.Operator):
                 data += timlData
             data += file[start:]            
         with open(node.outputPath,"wb") as outf:
-            outf.write(data)            
+            outf.write(data)       
+        """
     def execute(self,context):
         addon = context.user_preferences.addons[self.addon_key]
         self.addon_props = addon.preferences

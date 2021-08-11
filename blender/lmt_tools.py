@@ -150,11 +150,17 @@ class KeyframeData(bpy.types.PropertyGroup):
     interpolationMethod = bpy.props.IntProperty(name="Interpolation Control", default = 2)
 
 def timlMapSettings(context,layout,action):
-    op = layout.operator("freehk.timl_remap", icon_value=pcoll["FREEHK"].icon_id, text="Remap Properties [F6]")
+    col = layout.column(align=True)
+    op = col.operator("freehk.timl_remap", icon_value=pcoll["FREEHK"].icon_id, text="Remap Properties [F6]")
     for prop in ["trans","rot","scl"]:
         for axis in ["x","y","z"]:
             setattr(op,"from_"+prop+axis,getattr(action.freehk,prop+axis))
             setattr(op,"to_"+prop+axis,getattr(action.freehk,prop+axis))
+    row = col.row(align=True)
+    row.operator("freehk.resample_timl_fcurve", icon_value=pcoll["FREEHK_RESAMPLE"].icon_id, text="Resample Selected")
+    action = getActiveAction(context)
+    row.prop(action.freehk,"resampleRate","")
+    
     #op.action = action
 
 class LMTPanel():
@@ -225,14 +231,20 @@ class ActionDataTools(bpy.types.Panel):
             
 lmtTools = ["clear_tether","transform_tether_silent","transform_tether","update_name","update_bone_function",
             "complete_channels","synchronize_keyframes",
-            "resample_fcurve","resample_action","create_fcurve_action","check_export"
+            "resample_fcurve","resample_action","create_fcurve_action",
+            "clear_buffer_quality","maximize_buffer_quality",
+            "check_export"
             ]
 lmtDescriptions = ["Clear %sTethers","Transfer %sTethers","Transfer %s& Update","Update %sNames",
                    "Update %sBone Functions","Complete %sChannels","Synchronize %sKeyframes",
-                   "Resample %sSelected FCurves","Resample %sFCurves","Enable %sFreeHK FCurves","Check %sfor Export"]
+                   "Resample %sSelected FCurves","Resample %sFCurves","Enable %sFreeHK FCurves",
+                   "Clear %sEncodings","Maximize %sEncodings",
+                   "Check %sfor Export"]
 lmtIcons = ["FREEHK_CLEAR","FREEHK_TRANSFER_SILENT","FREEHK_TRANSFER","FREEHK_NAMES","FREEHK_BONES",
             "FREEHK_CHANNELS","FREEHK_SYNCRHONIZE",
-            "FREEHK_RESAMPLE","FREEHK_RESAMPLE","FREEHK","FREEHK_CHECK"]
+            "FREEHK_RESAMPLE","FREEHK_RESAMPLE","FREEHK",
+            "FREEHK_CLEAR_ENCODE","FREEHK_MAX_ENCODE",
+            "FREEHK_CHECK"]
 
 #layout.operator("freehk.resample_fcurve",icon_value=pcoll["FREEHK"].icon_id, text="Add FreeHK Props")
 #layout.operator("freehk.create_fcurve_action",icon_value=pcoll["FREEHK"].icon_id, text="Add FreeHK Props")
@@ -414,7 +426,7 @@ class KeyframeTools(bpy.types.Panel):
                             col.prop(p, "interpolation", text="FreeHK Interpolation")
                         row = col.row(align=True)
                         row.label("FreeHK Frame Value")
-                        row.prop(p,"co",index=0,text="t")
+                        row.prop(p,"co",index=0,text="Time")
                         row.prop(p,"co",index=1,text="Value")
                         if action.freehk.starType == "TIML_Action":
                             col.prop(p, "back", text="FreeHK Parameter 1")

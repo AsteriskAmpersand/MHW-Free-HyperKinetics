@@ -6,14 +6,17 @@ Created on Tue Mar 23 03:55:00 2021
 """
 import json
 import struct
+import io
 try:
     from ..common import Cstruct as CS
     from ..common import FileLike as Fl
+    from .CRC import jamcrc32
 except:
     import sys
     sys.path.append('../common')
     from common import Cstruct as CS
     from common import FileLike as Fl
+    from CRC import jamcrc32
 from collections import OrderedDict
 
 TIMLSIG = b"timl"
@@ -25,16 +28,13 @@ class Visitable():
     def setVisitFlags(self,depth = 0):
         self.__setVisitFlags__(self)
         if hasattr(self,"subiterable"):
-            print("  "*depth,type(getattr(self,self.subiterable)))
+            #print("  "*depth,type(getattr(self,self.subiterable)))
             for t in getattr(self,self.subiterable):
-                print("  "*depth,"-",type(t))
+                #print("  "*depth,"-",type(t))
                 t.setVisitFlags(depth+1)
     def updateOffsets(self):
-        print("Updating:",type(self))
         if hasattr(self,"subiterable"):
             nlevel = getattr(self,self.subiterable)
-            print(nlevel)
-            print()
             if nlevel:
                 self.offset = nlevel[0].__selfOffset__
             for l in nlevel:
@@ -235,11 +235,9 @@ class TIML(Visitable):
     
     def calculateStructureOffsets(self,structure):
         runningCount = 0
-        print(list(map(type,structure)))
         for entry in structure:
             if type(entry) is CS.DeferredPadding:
                 entry.pad(runningCount)
-            print(type(entry))
             entry.__selfOffset__ = runningCount
             runningCount += entry.size()
         return    
@@ -288,11 +286,6 @@ class TIML(Visitable):
     def serialize(self):
         if self.__serializationStructure__ is None:
             self.calculateOffsets()
-        print()
-        print()
-        self.rprint()
-        print()
-        print()
         return b''.join(map(lambda x: x.serialize(),self.__serializationStructure__))
 
 def parseTIML(filename):
@@ -321,7 +314,7 @@ class fakeFile():
         return self.cursor < len(self.data)
 
 
-def getTimlOffsets(file):
+def legacy_getTimlOffsets(file):
     timlOffset = []
     lastOffset = 0
     try:
@@ -337,15 +330,26 @@ def parseLength(file,offset):
     return CS.readBinary("int",Fl.FileLike(file[offset-4:offset]))
 def writeLength(length):
     return CS.writeBinary("int",length)
-def extractTIML(stream):
-    timls = []    
+
+def _extractTIML(stream,legacy = False):
+    timls = []
+    lengths = []
     file = stream.read()
-    timlOffset = getTimlOffsets(file)    
+    if  legacy:
+        timlOffset = legacy_getTimlOffsets(file)  
+    else:
+        timlOffset = getTimlOffsets(file)
     for offset in timlOffset:
+        print(hex(offset))
         length = parseLength(file,offset)
+        lengths.append(length)
         #print(length)
         timls.append(TIML(fakeFile(file[offset:offset+length])))
-    return timls,timlOffset
+    return timls,timlOffset,lengths
+
+def extractTIML(stream):
+    t,to,l = _extractTIML(stream)
+    return t, to
 
 def parseEFX(filename):
     with open(filename,"rb") as inf:
@@ -364,9 +368,127 @@ def printTIML(timl):
                         keyf.print("    |    |    |")
                         print("    |    |    |------------")
 
+def findMatches(data,binaryData):
+    l = len(data)
+    for i in range(len(binaryData)-l+1):
+        if binaryData[i:i+l] == data:
+            yield i
+    
+
+class EFX(CS.PyCStruct):
+    fields =  {"signature" : "char[4]",
+        "version" : "int",
+        "constant" : "int[5]",
+        "EFXR" : "char[4]",
+        "unkn0" : "uint",#1 is the usual but other values exist
+        "unkn1" :  "uint",#-1
+        "countBody" : "uint",
+        "labelSize" : "uint",
+        "countPlay" : "uint",
+        "countExtern" : "uint",
+        "countSubselection" : "uint",
+        "subselectionSize" : "uint",
+        "countEOF" : "uint",
+        "doubleBuffer" : "uint"}
+    def readRawStrings(self,data):
+        labels = data.read(self.labelSize).split(b'\x00')
+        return list(map(lambda x: x.decode("utf-8"),labels))
+    def hashLabels(self,labels):
+        return [jamcrc32(label) for label in labels if label]
+    def scanHashes(self,bodyHashes,data):
+        data.seek(0)
+        binaryData = data.read()
+        offsets = []
+        curr = 0
+        for hsh in bodyHashes:
+            m = binaryData[curr:].find(hsh)
+            if m != -1:
+                ix = m+curr
+                curr = ix+4
+                length = binaryData[ix+0x10]
+                if length != 0:                    
+                    if binaryData[ix+0x14:ix+0x18] == b'timl':
+                        offsets.append(ix+0x14)
+                else:
+                    offsets.append(ix+0x14)
+        return sorted(list(set(offsets)))
+    def marshall(self,data):
+        super().marshall(data)
+        self.labels = self.readRawStrings(data)
+        self.hashes = self.hashLabels(self.labels)
+        bodyHashes = self.hashes[self.countPlay+self.countExtern:self.countPlay+self.countExtern+self.countBody]
+        self.timl_offsets = self.scanHashes(bodyHashes,data)
+        return self
+    
+def getTimlOffsets(binfile):
+    efx = EFX().marshall(io.BytesIO(binfile))
+    return efx.timl_offsets
+
+
+class TIML_EFX():
+    legacy = False
+    def marshall(self,stream):
+        data = stream.read()
+        stream.seek(0)
+        timls,offsets,lengths = _extractTIML(stream,self.legacy)
+        self.entryData = []
+        start = 0
+        for o,l in zip(offsets,lengths):
+            self.entryData.append(bytearray(data[start:o]))
+            start = o+l
+        self.entryData.append(bytearray(data[start:]))
+        self.timlData = timls
+        return self
+    def writeLength(self,ix,length):
+        binlen = writeLength(length)
+        self.entryData[ix][-4:] = binlen
+    def extend(self,subTimlFiles):
+        used = set()
+        self.inject(subTimlFiles,used)
+        for ix,d in enumerate(self.timlData):
+            if ix not in used:
+                self.timlData[ix] = None
+                self.writeLength(ix,0)
+        return self
+    def generateTiml(self,data):
+        timl = TIML()
+        timl.Header.count = len(data)
+        timl.extend(data)
+        return timl
+        
+    def inject(self,subTimlFiles,used = set()):
+        for data in subTimlFiles:
+            if data:
+                timldata = self.generateTiml(data)
+                self.timlData[data.id] = timldata
+                self.writeLength(data.id,len(timldata.serialize()))
+                used.add(data.id)
+        return self
+    def serialize(self):
+        binstr = b''
+        for datum,timl in zip(self.entryData,self.timlData):
+            binstr += datum + (timl.serialize() if timl else b'')
+        binstr += self.entryData[-1]
+        return binstr
+
+class Legacy_TIML_EFX(TIML_EFX):
+    legacy = True
+
 if __name__ == "__main__":
     from pathlib import Path
     chunk = r"E:\MHW\chunk"
+            
+    for file in list(Path(chunk).rglob("*.efx")):
+        print(file)
+        with open(file,"rb") as inf:
+            efx = EFX().marshall(inf)
+            print(list(map(hex,efx.timl_offsets)))
+            inf.seek(0)
+            tefx = TIML_EFX().marshall(inf)     
+            print (len(tefx.timlData))
+            #for timl in tefx.timlData:                
+                #print(type(timl))
+                #raise
                 
     for file in list(Path(chunk).rglob("*.timl")):
         print(file)
@@ -377,13 +499,3 @@ if __name__ == "__main__":
             inf.seek(0)
             timl = TIML(inf)
             assert timl.serialize() == bind
-            
-    for file in list(Path(chunk).rglob("*.efx")):
-        print(file)
-        with open(file,"rb") as inf:
-            timls,offsets = extractTIML(inf)
-            if timls:
-                pass
-                #print(file)
-            for timl in timls:                
-                timl.serialize()

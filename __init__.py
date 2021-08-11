@@ -40,6 +40,11 @@ class FreeHKAddonPreferences(AddonPreferences):
         description="Performs bone function to animation linking implicitly",
         default=True,
     )
+    dumb_efx_timl = BoolProperty(
+        name="Retrograde EFX Mode",
+        description="Dumbs down the EFX importing mode to only use explicit timl declarations",
+        default=False,
+    )
     graph_error = EnumProperty(name = "Graph Error Handling",items = errorItems,default = "Fix")
     action_error = EnumProperty(name = "Action Error Handling",items = errorItems,default = "Fix")
     fcurve_error = EnumProperty(name = "FCurve Error Handling",items = errorItems,default = "Fix")
@@ -49,12 +54,13 @@ class FreeHKAddonPreferences(AddonPreferences):
     output_log_folder = StringProperty(name = "Export Output Log Directory",subtype = 'DIR_PATH')
     def draw(self, context):
         layout = self.layout
-        srow = layout.row(align=True)
-        row = srow.row(align=True)
+        row = layout.row(align=True)
         row.prop(self,"implicit_tether")
+        row.prop(self,"dumb_efx_timl")
+        row = layout.row(align = True)
         row.prop(self,"output_log")
         if self.output_log:
-            srow.prop(self,"output_log_folder")
+            row.prop(self,"output_log_folder")
         col = layout.column(align=True)
         col.prop(self,"graph_error")
         col.prop(self,"action_error")

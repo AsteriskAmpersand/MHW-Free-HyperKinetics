@@ -13,6 +13,7 @@ from .freeHKNodeOps import (LMTACTION,
 from ..lmt_operators import (TransferTether,TransferTetherSilent,ClearTether,UpdateBoneFunctions,
                             UpdateAnimationNames,CompleteChannels,SynchronizeKeyframes,
                             ResampleFCurve,ResampleSelectedFCurve,GlobalEnableFCurves,
+                            ClearEncoding, MaximizeQuality,
                             CheckActionForExport)
 from ..lmt_tools import lmtTools, lmtDescriptions, lmtIcons
 
@@ -96,6 +97,8 @@ SynchronizeKeyframesNode = defineDependentClass(SynchronizeKeyframes)
 ResampleFCurveNode = defineDependentClass(ResampleFCurve)
 ResampleSelectedFCurveNode = defineDependentClass(ResampleSelectedFCurve)
 GlobalEnableFCurvesNode = defineDependentClass(GlobalEnableFCurves)
+ClearEncodingNode = defineDependentClass(ClearEncoding)
+MaximizeQualityNode  = defineDependentClass(MaximizeQuality)
 CheckActionForExportNode = defineDependentClass(CheckActionForExport)
 
 
@@ -203,6 +206,8 @@ classes = [
     ResampleFCurveNode,
     ResampleSelectedFCurveNode,
     GlobalEnableFCurvesNode,
+    ClearEncodingNode,
+    MaximizeQualityNode,
     CheckActionForExportNode
 ]
 
