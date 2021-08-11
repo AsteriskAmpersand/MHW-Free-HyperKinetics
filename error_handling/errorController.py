@@ -194,7 +194,7 @@ class ErrorHandler():
             prev = err
         return bool(grouped)
     def writeLog(self,exportpath,logpath):
-        outpath = exportpath+"\\"+logpath
+        outpath = logpath+Path(exportpath).stem+".txt"
         try:
             with open(outpath,"w") as outf:
                 output = lambda x: outf.write(x)

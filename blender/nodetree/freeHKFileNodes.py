@@ -241,13 +241,17 @@ class JSONFileNode(Node,FreeHKOutputNode):
     # If this function is not defined, the draw_buttons function is used instead
     def draw_buttons_ext(self, context, layout):
         layout.prop(self, "outputPath")
+    def basicStructure(self):
+        return self
+    def extend(self,structure):
+        return self
     def update(self):
         linkName = list(self.inputs.keys())[0]
         if self.inputs[linkName].links:            
             self.inputs[linkName].name = self.inputs[linkName].links[0].from_socket.name
 
 classes = [
-    LMTFileNode, EFXFileNode, TIMLFileNode,JSONFileNode
+    LMTFileNode, EFXFileNode, TIMLFileNode#,JSONFileNode
 ]
 
 def register():

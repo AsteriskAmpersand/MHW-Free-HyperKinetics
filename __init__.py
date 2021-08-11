@@ -24,11 +24,14 @@ from .error_handling.errorLists import errorItems,errorTextLevel,errorDisplayLev
 content=bytes("","UTF-8")
 bl_info = {
     "name": "Free Hyper-Kinetics",
-    "description": "Monster Hunter Animation Timeline Export Tools",
-    "category": "Export",
+    "description": "Monster Hunter Animations and Timelines Import Export Tools",
+    "category": "Import-Export",
     "author": "AsteriskAmpersand",
-    "location": "File > Import-Export > MH",
-    "version": (1,0,0)
+    "version": (1,0,0),
+    "blender": (2,79,0),
+    "location":"Dopesheet > ActionEditor, NodeEditor > FreeHKNodeTree, File > Import",
+    "wiki_url":"https://github.com/Ezekial711/MonsterHunterWorldModding/wiki/Free-Hyperkinetics-and-Independent-TIML-Works-Overview",
+    "tracker_url":"https://github.com/AsteriskAmpersand/MHW-Free-HyperKinetics/issues"    ,
 }                     
 
 class FreeHKAddonPreferences(AddonPreferences):
