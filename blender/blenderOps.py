@@ -115,6 +115,20 @@ def setEncodingType(fcurve,encoding):
         return
     customizeFCurve(fcurve,encoding,-2)
 
+def frameless(fcurve,boneFunction):
+    if len(fcurve.keyframe_points) == 0:
+        return True
+    if boneFunction == -1:
+        if len(fcurve.keyframe_points) > 2:
+            return False
+        if len(fcurve.keyframe_points) == 2:
+            return 0 in {p.co[0] for p in fcurve.keyframe_points}
+    else:
+        if len(fcurve.keyframe_points) == 1:
+            return 0 in {p.co[0] for p in fcurve.keyframe_points}
+        else:
+            return False
+        
 def setMaxEncoding(fcurve):
     path,transform = breakPath(fcurve.data_path)
     encodingMap = {"rotation_quaternion":6,
@@ -122,7 +136,15 @@ def setMaxEncoding(fcurve):
                    "location":3,
                    "rotation_euler":6     
                 }
+    keylessEncodingMap = {"rotation_quaternion":2,
+                   "scale":1,
+                   "location":1,
+                   "rotation_euler":2     
+                }
     if transform in encodingMap:
+        boneFunction = fetchBoneFunction(transform)
+        if frameless(transform,boneFunction):
+            setEncodingType(fcurve,keylessEncodingMap[transform])
         setEncodingType(fcurve,encodingMap[transform])
     return
 

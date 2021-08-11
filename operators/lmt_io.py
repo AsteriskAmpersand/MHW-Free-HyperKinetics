@@ -67,8 +67,8 @@ class LMTImporter(Operator,ImportHelper,ImporterBase):
         super().draw(context)
         layout = self.layout
         #layout.prop(self,"angle_convert")
-        layout.prop(self,"anim_filter")
         layout.prop(self,"strip_buffer")
+        layout.prop(self,"anim_filter")        
         if self.anim_filter:
             r = layout.row()
             r.prop(self,"include_parents")

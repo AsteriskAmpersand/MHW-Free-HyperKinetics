@@ -131,7 +131,7 @@ node_categories = list(reversed([
         #NodeItem("LMTFileInjectionNode"),
         NodeItem("EFXFileNode"),
         NodeItem("TIMLFileNode"),
-        NodeItem("JSONFileNode"),
+        #NodeItem("JSONFileNode"),
     ]), 
 ]))
 

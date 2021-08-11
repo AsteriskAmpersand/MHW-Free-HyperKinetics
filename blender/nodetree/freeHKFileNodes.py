@@ -234,13 +234,17 @@ class JSONFileNode(Node,FreeHKOutputNode):
         subtype = 'FILE_PATH'
         )
     def init(self, context):
-        self.inputs.new("FreeHKGenericSocket","Action or Entry")#
+        self.inputs.new("FreeHKGenericSocket","Action, Data or Entry")#
     def draw_buttons(self, context, layout):
         layout.prop(self, "outputPath")
     # Detail buttons in the sidebar.
     # If this function is not defined, the draw_buttons function is used instead
     def draw_buttons_ext(self, context, layout):
         layout.prop(self, "outputPath")
+    def update(self):
+        linkName = list(self.inputs.keys())[0]
+        if self.inputs[linkName].links:            
+            self.inputs[linkName].name = self.inputs[linkName].links[0].from_socket.name
 
 classes = [
     LMTFileNode, EFXFileNode, TIMLFileNode,JSONFileNode
