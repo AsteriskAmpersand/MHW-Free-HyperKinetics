@@ -13,7 +13,7 @@ from .freeHKNodeOps import (LMTACTION,
 from ..lmt_operators import (TransferTether,TransferTetherSilent,ClearTether,UpdateBoneFunctions,
                             UpdateAnimationNames,CompleteChannels,SynchronizeKeyframes,
                             ResampleFCurve,ResampleSelectedFCurve,GlobalEnableFCurves,
-                            ClearEncoding, MaximizeQuality,
+                            ClearEncoding, MaximizeQuality,PreviewActionsInStrip,
                             CheckActionForExport)
 from ..lmt_tools import lmtTools, lmtDescriptions, lmtIcons
 
@@ -100,6 +100,7 @@ GlobalEnableFCurvesNode = defineDependentClass(GlobalEnableFCurves)
 ClearEncodingNode = defineDependentClass(ClearEncoding)
 MaximizeQualityNode  = defineDependentClass(MaximizeQuality)
 CheckActionForExportNode = defineDependentClass(CheckActionForExport)
+StripPreview = defineDependentClass(PreviewActionsInStrip)
 
 
 #layout.operator("freehk.resample_fcurve",icon_value=pcoll["FREEHK"].icon_id, text="Add FreeHK Props")
@@ -128,6 +129,9 @@ class ActionToolsNodes(bpy.types.Panel):
                 l.prop(context.scene,"freehk_tether",text = "")#,text = "Transfer Target")
             if tool == "resample_action":
                 l.prop(bpy.context.scene,"freehk_node_resample","")
+        c.operator("freehk.preview_actions_node",
+                   icon_value=pcoll["FREEHK_PREVIEW"].icon_id, 
+                   text="Actions as NLA Sequence")
 
 class ExportSettings(bpy.types.Panel):
     bl_idname = "freehk.tree_tools_export"
@@ -208,7 +212,8 @@ classes = [
     GlobalEnableFCurvesNode,
     ClearEncodingNode,
     MaximizeQualityNode,
-    CheckActionForExportNode
+    CheckActionForExportNode,
+    StripPreview
 ]
 
 def importer_menu_ops(self, context):

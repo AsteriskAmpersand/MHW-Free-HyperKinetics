@@ -41,6 +41,29 @@ def customizeFCurve(fc,starType=0,boneFunction=-2):
     l.min_y = boneFunction
     return l
 
+def animationLength(action):
+    return max(keyframe.co[0] for fcurve in action.fcurves for keyframe in fcurve.keyframe_points)
+        
+
+def previewStrip(self,obj,actions):
+    if not obj:
+        return
+    track = obj.animation_data.nla_tracks.new()
+    length = 0
+    #scene_length = bpy.context.scene.frame_end
+    for action in actions:
+        if action.freehk.starType == "LMT_Action":
+            if action.freehk.frameCount == -1:
+                #probably should justcalculate from fcurves
+                delta = animationLength(action) + 1
+            else:
+                delta = action.freehk.frameCount + 1
+            if bpy.context.scene.frame_end < length + delta:
+                bpy.context.scene.frame_end = length+delta+1
+            s = track.strips.new(name = action.name, start = length, action = action)
+            length += delta
+    #bpy.context.scene.frame_end = scene_length
+
 def foldFCurve(action,fcurve):
     fc = action.fcurves.new(data_path = fcurve.data_path, index=(fcurve.array_index+4)%8)
     fc.keyframe_points.add(1)

@@ -6,7 +6,9 @@ Created on Mon Jul 26 22:00:26 2021
 """
 import bpy
 from .timl_param_utils import timlNameToProp,timlPropToName
-from .blenderOps import customizeFCurve,foldFCurve,addKeyframe,getActions,fetchFreeHKCustom,updateDopesheet,setEncodingType,setMaxEncoding
+from .blenderOps import (customizeFCurve,foldFCurve,addKeyframe,getActions,fetchFreeHKCustom,
+                        updateDopesheet,setEncodingType,setMaxEncoding,fetchEncodingType,
+                        previewStrip)
 from .tetherOps import (transferTether, updateAnimationNames,updateAnimationBoneFunctions,
                         completeMissingChannels,synchronizeKeyframes,resampleAction,resampleFCurve,
                         getBoneFromPath)
@@ -250,7 +252,7 @@ class ClearEncoding(MappedActionOperator,bpy.types.Operator):
     limit = bpy.props.BoolProperty(name = "Limit", default = True, options={'HIDDEN'} )
     def mappedOperator(self,armature,action):
         for fcurve in action.fcurves:
-            setEncodingType(fCurve,0)
+            setEncodingType(fcurve,0)
 
 class MaximizeQuality(MappedActionOperator,bpy.types.Operator):
     bl_idname = "freehk.maximize_buffer_quality"
@@ -292,11 +294,26 @@ class CheckActionForExport(MappedActionOperator,bpy.types.Operator):
             error_handler.raiseAlert()
         return returnCode
             
+class PreviewActionsInStrip(bpy.types.Operator):
+    bl_idname = "freehk.preview_actions"
+    bl_label = "Preview All Actions in the NLA Editor"
+    bl_options = {'REGISTER', 'PRESET', 'UNDO'}
+    bl_description = "Preview all animations in a succession on the NLA Editor"
+    actionType = "LMT_Action"
+    limit = False
+    actionFetch = getActions
+    def execute(self,context):
+        target_actions = sorted(self.actionFetch(context,self.actionType),key = lambda x: x.name)
+        armature = bpy.context.scene.freehk_tether
+        if armature or self.tetherless:
+            previewStrip(self,armature,target_actions)
+        return {'FINISHED'}
+    
         
 classes = [
     CreateFCurve,FoldFCurve,AddKeyframes,TransferTether,TransferTetherSilent,ClearTether,UpdateBoneFunctions,UpdateAnimationNames,
     CompleteChannels,SynchronizeKeyframes,ResampleFCurve,ResampleSelectedFCurve,GlobalEnableFCurves,CheckActionForExport,
-    ResampleSelectedTIMLFCurve, ClearEncoding, MaximizeQuality
+    ResampleSelectedTIMLFCurve, ClearEncoding, MaximizeQuality, PreviewActionsInStrip
 ]
 
 def register():

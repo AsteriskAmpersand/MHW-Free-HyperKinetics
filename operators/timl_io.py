@@ -55,11 +55,11 @@ class ImporterBase():
         layout.prop(self,"clear_scene")
         layout.prop(self,"reuse_tree")
         layout.prop(self,"advanced_remap")
-        layout.prop(self,"hide")
         if not self.advanced_remap:
             for prop in ["trans","rot","scl"]:
                 for axis in ["x","y","z"]:
                     layout.prop(self,prop+axis)
+        layout.prop(self,"hide")
     def execute(self,context):
         bpy.context.scene.frame_start = 0
         bpy.context.scene.frame_end = 1
