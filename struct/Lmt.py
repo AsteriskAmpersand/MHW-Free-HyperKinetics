@@ -44,8 +44,8 @@ class LMTOffsets(C.PyCStruct):
 class LMTActionHeader(C.PyCStruct):
     fields = OrderedDict([
         ("fcurveOffset", "uint64"),
-        ("fcurveCount", "int"),
-        ("frameCount", "int"),
+        ("fcurveCount", "uint"),
+        ("frameCount", "uint"),
         ("loopFrame", "int"),
         ("NULL0", "int[3]"),
         ("Vec0", "float[4]"),#translation vector

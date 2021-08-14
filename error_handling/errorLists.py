@@ -96,7 +96,7 @@ fcurveErrors = {"F_LMT_DUPLICATE_FCURVE":("FCurve %s in Animation %s occurs more
                                                 "You can set the bone function to -2 for all members but one for auto-detect on those",
                                                 "You can set the boen function to -2 for all members so they use the skeleton's bone function",
                                                 "You can also use 'Update Bone Functions' button to sync Bone Functions to the Tether bones"]),
-                "F_LMT_NAME_FUNCTION_CONFLICT":("Transform %s in Animation %s Bone Function does not match the Bone it Animates in %s",
+                "F_LMT_NAME_FUNCTION_CONFLICT":("Transform %s in Animation %s Bone Function does not match the Bone it Animates",
                                                ["The bone function in the fcurve data does not match that of the bone it animates",
                                                 "on the tethered skeleton attached to this animation.",
                                                 "You can use the 'Update Bone Functions' button to sync Bone Functions to the Tether bones"]),

@@ -39,7 +39,7 @@ class TreeExporter(bpy.types.Operator):
         nodeStructure = node.export()
         if node.inject:
             try:
-                masterFile = type(nodeStructure)().parseFile(node.outputPath)
+                masterFile = type(nodeStructure)().parseFile(node.filepath)
                 masterFile.injectFile(nodeStructure)
                 nodeStructure = masterFile
             except IndexError:
@@ -47,12 +47,12 @@ class TreeExporter(bpy.types.Operator):
                 node.error_handler.append("G_INJECTION_ENTRY_COUNT",node.name,masterFile.entryCount())
                 node.error_handler.logUnsolved()        
         if self.addon_props.output_log:
-            node.error_handler.writeLog(node.outputPath,self.addon_props.output_log_folder)
+            node.error_handler.writeLog(node.filepath,self.addon_props.output_log_folder)
         node.error_handler.display()
         if node.error_handler.verifyExport():            
             filedata = nodeStructure.serialize()
             
-        with open(node.outputPath,"wb") as outf:
+        with open(node.filepath,"wb") as outf:
             outf.write(filedata)
     
     def generateTIML(self,timlData):
@@ -64,7 +64,7 @@ class TreeExporter(bpy.types.Operator):
         self.FileExport(node)
         """
         subTimls = node.export()
-        with open(node.outputPath,"rb") as inf:
+        with open(node.filepath,"rb") as inf:
             file = inf.read()
             timlOffsets = TIML.getTimlOffsets(file)
             start = 0
@@ -83,7 +83,7 @@ class TreeExporter(bpy.types.Operator):
                 data += TIML.writeLength(len(timlData))
                 data += timlData
             data += file[start:]            
-        with open(node.outputPath,"wb") as outf:
+        with open(node.filepath,"wb") as outf:
             outf.write(data)       
         """
     def execute(self,context):

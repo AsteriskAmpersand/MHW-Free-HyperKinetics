@@ -7,6 +7,8 @@ Created on Mon Aug  9 05:04:08 2021
 from .lmt_tools import actionDataPath,axislessDataPath
 from .tetherOps import strackerInverseTransform
 
+from mathutils import Vector
+
 class FreeHKError(Exception):
     pass
 
@@ -157,7 +159,7 @@ class EncodingObject():
         else:
             return 14
         #or just set everything to 14
-    def calculatteNonRotationType(self,tether):
+    def calculateNonRotationType(self,tether):
         if self.blindUsage == 1:
             #Translation
             comparisonPoint = max(self.bounds())

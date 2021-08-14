@@ -34,7 +34,7 @@ class FreeHKOutputNode(FreeHKNode):
         inx.link_limit = 0
     # Additional buttons displayed on the node.
     def draw_buttons(self, context, layout):
-        layout.prop(self, "outputPath")
+        layout.prop(self, "filepath")
         layout.prop(self, "entryCount")
         layout.prop(self, "customizeExport")
         if self.customizeExport:
@@ -141,7 +141,7 @@ class LMTFileNode(Node, FreeHKOutputNode):
     bl_label = "LMT Output Node"
     bl_icon = 'GREASEPENCIL'
 
-    outputPath = bpy.props.StringProperty(
+    filepath = bpy.props.StringProperty(
         name = "Path",
         description = "Path to the file to export",
         default = "",
@@ -168,7 +168,7 @@ class TIMLFileNode(Node, FreeHKOutputNode):
     bl_label = "TIML Output Node"
     bl_icon = 'GREASEPENCIL'
 
-    outputPath = bpy.props.StringProperty(
+    filepath = bpy.props.StringProperty(
         name = "Path",
         description = "Path to the file to export",
         default = "",
@@ -194,7 +194,7 @@ class EFXFileNode(Node, FreeHKOutputNode):
     bl_icon = 'GREASEPENCIL'
     exec(outputProps)
     
-    outputPath = bpy.props.StringProperty(
+    filepath = bpy.props.StringProperty(
         name = "Path",
         description = "Path to the file to export",
         default = "",
@@ -206,7 +206,7 @@ class EFXFileNode(Node, FreeHKOutputNode):
     inputStr = "EFX_Entry"
     addon_key = __package__.split('.')[0]
     def draw_buttons(self, context, layout):
-        layout.prop(self, "outputPath")
+        layout.prop(self, "filepath")
         layout.prop(self, "inject")        
     def calculateEntryCount(self):
         with open(self.filepath,"rb") as inf:
@@ -216,7 +216,7 @@ class EFXFileNode(Node, FreeHKOutputNode):
     def basicStructure(self):
         addon = bpy.context.user_preferences.addons[self.addon_key]
         retrograde = addon.preferences.preferences.dumb_efx_timl        
-        with open(self.outputPath,"rb") as inf:
+        with open(self.filepath,"rb") as inf:
             if retrograde:
                 return TIML.Legacy_TIML_EFX().marshall(inf)                
             else:
@@ -227,7 +227,7 @@ class JSONFileNode(Node,FreeHKOutputNode):
     bl_idname = 'JSONFileNode'
     bl_label = "JSON Output Node"
     bl_icon = 'GREASEPENCIL'
-    outputPath = bpy.props.StringProperty(
+    filepath = bpy.props.StringProperty(
         name = "Path",
         description = "Path to the file to export",
         default = "",
@@ -236,11 +236,11 @@ class JSONFileNode(Node,FreeHKOutputNode):
     def init(self, context):
         self.inputs.new("FreeHKGenericSocket","Action, Data or Entry")#
     def draw_buttons(self, context, layout):
-        layout.prop(self, "outputPath")
+        layout.prop(self, "filepath")
     # Detail buttons in the sidebar.
     # If this function is not defined, the draw_buttons function is used instead
     def draw_buttons_ext(self, context, layout):
-        layout.prop(self, "outputPath")
+        layout.prop(self, "filepath")
     def basicStructure(self):
         return self
     def extend(self,structure):

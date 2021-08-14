@@ -135,8 +135,8 @@ class LMTTransform(EncodingObject, SynchronicityObject, InversionObject):
             if not pbone or "boneFunction" not in pbone.bone:
                 if len(boneFunctions)>1: 
                     self.report("F_LMT_CONFLICTING_BONE_FUNCTION")
-                    if self.fcurveError.fix or self.fcurveError.omit:
-                        self.logSolution("Transform omitted from export process")
+                    if self.error_handler.fcurveError.fix or self.fcurveError.omit:
+                        self.error_handler.logSolution("Transform omitted from export process")
                     return False
                 else:
                     self.report("F_LMT_MISSING_BONE_FUNCTION")
@@ -144,10 +144,10 @@ class LMTTransform(EncodingObject, SynchronicityObject, InversionObject):
             #If there's a tiebreaker bone but it's not one of the choices
             if pbone.bone["boneFunction"] not in boneFunctions:                
                 self.report("F_LMT_NAME_FUNCTION_CONFLICT")
-                if self.fcurveError.fix:
-                    self.logSolution("Bone function set according to the relevant bone")
-                elif self.fcurveError.omit:
-                    self.logSolution("Transform omitted from export process")
+                if self.error_handler.fcurveError.fix:
+                    self.error_handler.logSolution("Bone function set according to the relevant bone")
+                elif self.error_handler.fcurveError.omit:
+                    self.error_handler.logSolution("Transform omitted from export process")
                     return False
                 else:
                     return False                
@@ -309,7 +309,7 @@ class LMTActionParser():
                 self.valid = False
                 raise FreeHKError
         else:
-            frameCount = max(1,max(map(lambda x: x.getFrameSpan(),bf_channels),default = 1))
+            frameCount = int(max(1,max(map(lambda x: x.getFrameSpan(),bf_channels),default = 1)))
         return frameCount
     def verifyFrameCount(self,bf_channels):
         for transform in bf_channels:

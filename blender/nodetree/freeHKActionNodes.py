@@ -19,10 +19,10 @@ class KeyframeSynchronizationError(Exception):
     pass
 
 def filter_TIML_actions(self,object):
-    return object.type == "ACTION" and object.freehk.starType == "TIML_Action"
+    return object.bl_rna.name == "Action" and object.freehk.starType == "TIML_Action"
 
 def filter_Non_TIML_actions(self,object): 
-    return object.type == "ACTION" and not filter_TIML_actions(self,object)
+    return object.bl_rna.name == "Action" and not filter_TIML_actions(self,object)
 
 class FreeHKAnimationNode(FreeHKNode):
     # Copy function to initialize a copied node from an existing one.
@@ -293,6 +293,7 @@ class ExportTIMLTypesNode:
             self.count = len(transforms)
             self.timelineParameterHash = int(action.freehk.timelineParam[1:],16)
             self.transforms = transforms
+            self.unkn0 = action.freehk.unkn0
     def compileRemap(self,action):
         remapper = {}
         for t,b in zip(["trans","rot","scl"],["location","rotation_euler","scale"]):
@@ -316,7 +317,7 @@ class ExportTIMLTypesNode:
             value.clean()
         return mapper.values()#[mapper[key] for key in sorted(mapper)]
     def structure(self):
-        struct = {"offset":self.offset,"count":self.count,"timelineParameterHash":self.timelineParameterHash,"NULL":0}
+        struct = {"offset":self.offset,"count":self.count,"timelineParameterHash":self.timelineParameterHash,"unkn0":self.unkn0}
         typing = TIML.TIML_Type().construct(struct)#.serialize()
         typing.transforms = [t.structure() for t in self.transforms]
         typing.transforms = list(filter(lambda x: x,typing.transforms))

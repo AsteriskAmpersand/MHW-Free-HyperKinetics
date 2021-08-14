@@ -11,6 +11,7 @@ def createTIMLAction(typing):
     action = bpy.data.actions.new("TIML::%s"%typing.timelineParameterString)
     action.freehk.starType = "TIML_Action"
     action.freehk.timelineParam = "m%08X"%typing.timelineParameterHash
+    action.freehk.unkn0 = typing.unkn0
     for prop in ["transx","transy","transz","rotx","roty","rotz","sclx","scly","sclz"]:
         if prop in typing.remapSettings:
             setattr(action.freehk,prop,typing.remapSettings[prop])
@@ -165,8 +166,8 @@ def setMaxEncoding(fcurve):
                    "rotation_euler":2     
                 }
     if transform in encodingMap:
-        boneFunction = fetchBoneFunction(transform)
-        if frameless(transform,boneFunction):
+        boneFunction = fetchBoneFunction(fcurve)
+        if frameless(fcurve,boneFunction):
             setEncodingType(fcurve,keylessEncodingMap[transform])
         setEncodingType(fcurve,encodingMap[transform])
     return

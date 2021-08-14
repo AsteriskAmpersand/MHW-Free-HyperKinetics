@@ -20,7 +20,7 @@ class TIMLDataNode(Node, FreeHKNode):
     name = bpy.props.StringProperty(name="Name")
     unkn1 = bpy.props.IntProperty(name="Unknown 1")
     unkn2 = bpy.props.IntProperty(name="Unknown 2")
-    animLength = bpy.props.IntProperty(name="Animation Length")
+    animLength = bpy.props.IntProperty(name="Animation Length",min = 0)
     loopStartPoint = bpy.props.IntProperty(name="Loop Start Point")
     loopControl = bpy.props.EnumProperty(name="Loop Control",
 		description="Decide to install, ignore, or defer new addon update",
@@ -43,6 +43,7 @@ class TIMLDataNode(Node, FreeHKNode):
         layout.prop(self, "loopStartPoint")
         layout.prop(self, "loopControl")
     def basicStructure(self):
+        print(self.animLength)
         return TIML.TIML_Data().construct({"offset":None,"count":None,
                                      "dataIx0":self.unkn1,"dataIx1":self.unkn2,
                                      "animationLength":self.animLength,"loopStartPoint":self.loopStartPoint,

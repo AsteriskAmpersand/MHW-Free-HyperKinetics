@@ -15,7 +15,7 @@ from .tetherOps import (transferTether, updateAnimationNames,updateAnimationBone
 from .lmt_exporter import LMTActionParser
 from ..error_handling.errorController import DebugVerifier
 from .lmt_tools import encodingTypes
-
+from ..error_handling.errorController import ShowMessageBox
 
 class CreateFCurve(bpy.types.Operator):
     bl_idname = "freehk.create_fcurve"
@@ -143,6 +143,7 @@ class MappedActionOperator():
             print("Errors during FreeHK Operation:")
             for err in errors:
                 print("\t",err)
+            ShowMessageBox("Potential Errors were found see a list in the Windows Console (Window > Toggle System Console)", "Errors Found", 'ERROR')
         updateDopesheet(context)
         return {'FINISHED'}
 

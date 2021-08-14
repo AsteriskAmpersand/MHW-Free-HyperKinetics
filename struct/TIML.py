@@ -106,7 +106,7 @@ class TIML_Type(CS.PyCStruct,Visitable):
         ("offset", "uint64"),
         ("count", "uint64"),
         ("timelineParameterHash", "uint"),
-        ("NULL", "int")
+        ("unkn0", "int")
         ])
     subiterable = "transforms"
     

@@ -42,7 +42,7 @@ class FreeHKNode:
         return ntree.bl_idname == 'FreeHKNodeTree'
     def validSocketInputs(self,socket,conflicts = None):
         validInputs = set()
-        for socketLink in sorted(socket.links,key = lambda x: x.from_node.location[1],reverse = True):
+        for socketLink in socket.links:
                 if socket.name != socketLink.from_socket.name:
                     if conflicts is not None:
                         conflicts.append(("G_INPUT_TYPE_MISMATCH",self.name,socket.name,socketLink.from_node.name,socketLink.from_socket.name))
@@ -51,6 +51,7 @@ class FreeHKNode:
                 else:
                     #if socket.name not in validInputs: validInputs[socket.name] = set()
                     validInputs.add(socketLink.from_node)
+        validInputs = list(sorted(validInputs,key = lambda x: x.location[1],reverse = True))
         return validInputs,conflicts
     def validInputs(self):
         #conflicts = ErrorHandler(self)
@@ -68,7 +69,6 @@ class FreeHKNode:
             for entryNode in nodeList:
                 entryNode.cleanup()
     def export(self,error_handler = None):
-        print(type(self))
         if error_handler is None:
             error_handler = ErrorHandler(self)
         self.error_handler = error_handler
@@ -89,10 +89,10 @@ class FreeHKNode:
         #Stop if FCurve or Action errors found
         if not error_handler.verifyAnimations():
             return None
-        print(type(self))
-        print(self.structure)
-        print(substructure)
-        print()
+        #print(type(self))
+        #print(self.structure)
+        #print(substructure)
+        #print()
         return self.structure
 
 ### Node Categories ###

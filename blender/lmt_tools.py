@@ -116,6 +116,8 @@ class AnimData(bpy.types.PropertyGroup):
     timelineParam = bpy.props.EnumProperty(name = "Timeline Type",
                                       items = timelineitems,
                                       default = "None")
+    unkn0 = bpy.props.IntProperty(name = "Unknown",
+                                  default = 0)
     
     transx = bpy.props.EnumProperty(name = "Translation X Map",items = geometryitems,default = "m8E8AFE06")
     transy = bpy.props.EnumProperty(name = "Translation Y Map",items = geometryitems,default = "mF98DCE90")
@@ -217,17 +219,21 @@ class ActionDataTools(bpy.types.Panel):
             #layout.separator()
             #layout.label("FreeHK TIML Paramaters")
             layout.prop(action.freehk,"timelineParam",text = "FreeHK Timeline Type")
+            layout.prop(action.freehk,"unkn0",text = "FreeHK Unknown Parameter")
             layout.separator()
             layout.label(text = "TIML Remappping")
-            layout.prop(action.freehk,"transx")
-            layout.prop(action.freehk,"transy")
-            layout.prop(action.freehk,"transz")
-            layout.prop(action.freehk,"rotx")
-            layout.prop(action.freehk,"roty")
-            layout.prop(action.freehk,"rotz")
-            layout.prop(action.freehk,"sclx")
-            layout.prop(action.freehk,"scly")
-            layout.prop(action.freehk,"sclz")
+            col = layout.column(align = True)
+            col.prop(action.freehk,"transx")
+            col.prop(action.freehk,"transy")
+            col.prop(action.freehk,"transz")
+            col = layout.column(align = True)
+            col.prop(action.freehk,"rotx")
+            col.prop(action.freehk,"roty")
+            col.prop(action.freehk,"rotz")
+            col = layout.column(align = True)
+            col.prop(action.freehk,"sclx")
+            col.prop(action.freehk,"scly")
+            col.prop(action.freehk,"sclz")
             
 lmtTools = ["clear_tether","transform_tether_silent","transform_tether","update_name","update_bone_function",
             "complete_channels","synchronize_keyframes",

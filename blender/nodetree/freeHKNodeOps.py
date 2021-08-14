@@ -152,7 +152,7 @@ class uiNodeManager():
         if self.hide: self.pad(GRID)
         self.updateBelow(3)
         node = self.tree.nodes.new(nodeType)
-        node.outputPath = path
+        node.filepath = path
         for inpx in inputs:
             self.tree.links.new(inpx.outputs[inputType],node.inputs[inputType])
         node.location = (3*HORIZONTAL,-self.nodeCoords[3])
