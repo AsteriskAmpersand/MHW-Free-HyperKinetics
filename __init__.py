@@ -17,6 +17,7 @@ from .blender import timl_controller
 from .blender import lmt_tools
 from .blender import lmt_operators
 from .operators import timl_io,timl_ops,lmt_io,export_ops
+from .operators import lmt_rig_ops
 from .error_handling.errorLists import errorItems,errorTextLevel,errorDisplayLevel
 
 
@@ -27,7 +28,7 @@ bl_info = {
     "description": "Monster Hunter Animations and Timelines Import Export Tools",
     "category": "Import-Export",
     "author": "AsteriskAmpersand",
-    "version": (1,0,0),
+    "version": (1,1,0),
     "blender": (2,79,0),
     "location":"Dopesheet > ActionEditor, NodeEditor > FreeHKNodeTree, File > Import",
     "wiki_url":"https://github.com/Ezekial711/MonsterHunterWorldModding/wiki/Free-Hyperkinetics-and-Independent-TIML-Works-Overview",
@@ -75,7 +76,8 @@ class FreeHKAddonPreferences(AddonPreferences):
 modules = [timl_controller,lmt_tools,
            freeHKTree,freeHKSockets,freeHKNodes,freeHKNodeTools,
            freeHKActionNodes,freeHKDataNodes,freeHKFileNodes,
-           timl_io,timl_ops,lmt_io,lmt_operators,export_ops
+           timl_io,timl_ops,lmt_io,lmt_operators,export_ops,
+           lmt_rig_ops
            ]
 classes = []
 exportFunctions = [] 

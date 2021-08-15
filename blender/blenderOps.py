@@ -43,9 +43,18 @@ def customizeFCurve(fc,starType=0,boneFunction=-2):
     return l
 
 def animationLength(action):
-    return max(keyframe.co[0] for fcurve in action.fcurves for keyframe in fcurve.keyframe_points)
+    return max(keyframe.co[0]-1*(fetchBoneFunction(fcurve)==-1) for fcurve in action.fcurves for keyframe in fcurve.keyframe_points)
         
-
+def completeBasis(action):
+    frameCount = action.freehk.frameCount
+    if frameCount == -1:
+        frameCount = animationLength(action)
+    for fcurve in action.fcurves:
+        if fetchBoneFunction(fcurve) == -1:
+            timings = {kf.co[0] for kf in fcurve.keyframe_points}
+            if frameCount + 1 not in timings:
+                fcurve.keyframe_points.insert(frameCount+1,fcurve.evaluate(frameCount+1))
+                
 def previewStrip(self,obj,actions):
     if not obj:
         return
