@@ -100,8 +100,8 @@ class RigTransferTools(bpy.types.Panel):
     bl_label = "Rig Transfer Tools"
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
-    # bl_category = "Tools"
     addon_key = __package__.split('.')[0]
+    
     def draw(self, context):
         addon = context.user_preferences.addons[self.addon_key]
         self.addon_props = addon.preferences
@@ -116,7 +116,7 @@ class RigTransferTools(bpy.types.Panel):
         layout.prop(props,"bake")
         if props.bake:
             layout.prop(props,"groundRoot")
-        layout.operator("freehk.rig_transfer",text = "Transfer")
+        layout.operator("freehk.rig_transfer",icon = "MOD_ARMATURE")
         #col = layout.column(align = True)
         platform = bpy.context.scene.freehk_rig_ops_platform
         for bone in platform.presets[props.rigType].bone_presets:
