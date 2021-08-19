@@ -29,6 +29,8 @@ bl_info = {
     "category": "Import-Export",
     "author": "AsteriskAmpersand",
     "version": (1,1,0),
+    #1,0,0 - Alpha, Feature Complete to Original Spec
+    #1,1,0 - Alpha, Feature Complete to Transfer Requirements    
     "blender": (2,79,0),
     "location":"Dopesheet > ActionEditor, NodeEditor > FreeHKNodeTree, File > Import",
     "wiki_url":"https://github.com/Ezekial711/MonsterHunterWorldModding/wiki/Free-Hyperkinetics-and-Independent-TIML-Works-Overview",

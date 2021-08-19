@@ -41,6 +41,7 @@ class RigTransferData(bpy.types.PropertyGroup):
                                                ],
                                       default = "Humanoid")
     cat = bpy.props.BoolProperty(name = "CAT Rig", description = "Perform CAT Normalization Operations",default = False)                               
+    byname = bpy.props.BoolProperty(name = "Transfer by Name", description = "Transfer Animation based on Bone Names (instead of bone functions)",default = False)
     sourceName = bpy.props.EnumProperty(name = "Source Rig", description = "Non-MHW Armature with Animation", items = getRigs)
     targetName = bpy.props.EnumProperty(name = "Target Rig", description = "MHW Armature to bake Animation into", items = getMHWArmatures) 
     bake = bpy.props.BoolProperty(name = "Bake",default = True)
@@ -107,6 +108,8 @@ class RigTransferTools(bpy.types.Panel):
         props = bpy.context.scene.freehk_rig_ops
         layout = self.layout
         layout.prop(props,"cat")
+        if not props.cat:
+            layout.prop(props,"byname")
         layout.prop(props,"rigType")        
         layout.prop(props,"sourceName")
         layout.prop(props,"targetName")
@@ -201,6 +204,13 @@ def muteGlobal(catAction):
     for fcurve in catAction:
         if "." not in fcurve.data_path:
             fcurve.mute = True
+
+def getBoneFunction(bone):
+    if "boneFunction" in bone:
+        return bone["boneFunction"]
+    if "boneFunction" in bone.bone:
+        return bone.bone["boneFunction"]
+    return None
 
 class RigAnimationTransfer(bpy.types.Operator):
     bl_idname = "freehk.rig_transfer"
@@ -316,13 +326,15 @@ class RigAnimationTransfer(bpy.types.Operator):
     def addConstraints(self,source,copy,target):
         targetMapper = {}
         for bone in target.pose.bones:
-            if "boneFunction" in bone.bone:
-                targetMapper[bone.bone["boneFunction"]] = bone
+            bf = getBoneFunction(bone)
+            if bf is not None:
+                targetMapper[bf] = bone
         
         boneMapper = {}
         for bone in copy.pose.bones:
-            if "boneFunction" in bone and "__orthogonalizer__" in bone:
-                boneMapper[bone["boneFunction"]] = bone
+            bf = getBoneFunction(bone)
+            if bf is not None and "__orthogonalizer__" in bone:
+                boneMapper[bf] = bone
             self.addSpecialCases(boneMapper,bone)
         self.addMissingTrackers(boneMapper)
         clonableBones = self.doubleBoneDict(boneMapper)
@@ -345,8 +357,9 @@ class RigAnimationTransfer(bpy.types.Operator):
     def generateOrthogonalizer(self,copy,target):
         boneMapper = {}
         for bone in target.pose.bones:
-            if "boneFunction" in bone.bone:
-                boneMapper[bone.bone["boneFunction"]] = bone      
+            bf = getBoneFunction(bone)
+            if bf is not None:
+                boneMapper[bf] = bone      
         
         prev_mode = copy.mode # save
         active = bpy.context.scene.objects.active
@@ -355,8 +368,8 @@ class RigAnimationTransfer(bpy.types.Operator):
         additions = []
         ebs = copy.data.edit_bones
         for bone,ebone in zip(copy.pose.bones,ebs):
-            if "boneFunction" in bone:
-                bf = bone["boneFunction"]
+            bf = getBoneFunction(bone)
+            if bf is not None:
                 if bf in boneMapper:
                     orthogonal = boneMapper[bf]
                     delta = (orthogonal.matrix*Vector((0,1,0,0))).normalized().to_3d()
@@ -412,8 +425,9 @@ class RigAnimationTransfer(bpy.types.Operator):
         
         functionCloning = {}
         for sourcePB in source.pose.bones:
-            if "boneFunction" in sourcePB:
-                functionCloning[sourcePB.name] = sourcePB["boneFunction"]                
+            bf = getBoneFunction(sourcePB)
+            if bf is not None:
+                functionCloning[sourcePB.name] = bf                
         for copyPB in copy.pose.bones:
             if copyPB.name in functionCloning:
                 copyPB["boneFunction"] = functionCloning[copyPB.name]
@@ -445,18 +459,17 @@ class RigAnimationTransfer(bpy.types.Operator):
     def enumerateBoneFunctions(self,skeleton):
         bf = {}
         for bone in skeleton.pose.bones:
-            if "boneFunction" in bone:
-                bf[bone["boneFunction"]] = bone.name
-            if "boneFunction" in bone.bone:
-                bf[bone.bone["boneFunction"]] = bone.name
+            bfun = getBoneFunction(bone)
+            if bfun is not None:
+                bf[bfun] = bone.name
         return bf
     
     def mapNames(self,context,source,target):
         bfs = self.enumerateBoneFunctions(source)
         mapper = {}
         for bone in target.pose.bones:
-            if "boneFunction" in bone.bone:
-                bf = bone.bone["boneFunction"]
+            bf = getBoneFunction(bone)
+            if bf is not None:
                 if bf in bfs:
                     mapper[bfs[bf]] = bone.name
         for mesh in context.scene.objects:
@@ -491,10 +504,22 @@ class RigAnimationTransfer(bpy.types.Operator):
         self.sourceName = options.sourceName
         self.targetName = options.targetName
         self.cat = options.cat
+        self.byname = options.byname
         self.humanoid = options.rigType == "Humanoid"
         self.bake = options.bake
         self.groundRoot = options.groundRoot
         self.platformMapping = self.generatePlatformMapping(mapping)
+    
+    def transferFunctions(self,source,target):
+        bonemap = {}
+        for bone in source.pose.bones:
+            bf = getBoneFunction(bone)
+            if bf is not None:
+                bonemap[bone.name] = bf
+        for bone in target.pose.bones:
+            if bone.name in bonemap:
+                bone["boneFunction"] = bonemap[bone.name]
+                bone.bone["boneFunction"] = bonemap[bone.name]
     
     def execute(self,context):
         self.extractPanelData(context)
@@ -512,6 +537,8 @@ class RigAnimationTransfer(bpy.types.Operator):
             functionalizeArmature(source)
             applyTransformSkeleton(source,context)  
             muteGlobal(source.animation_data.action)
+        elif self.byname:
+            self.transferFunctions(target,source)
         copy = self.cloneArmature(source,copyAction = False)
         self.generateOrthogonalizer(copy, target)
         self.addConstraints(source,copy,target)
