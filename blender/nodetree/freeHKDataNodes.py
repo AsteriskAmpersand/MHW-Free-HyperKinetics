@@ -10,6 +10,15 @@ from bpy.types import Node
 from .freeHKNodes import FreeHKNode
 from ...struct import TIML,EFX,Lmt,ExtensibleList
 
+try:
+    from ...app_license.license import signature
+    licensed = True
+    print("FreeHK Commercial License")
+except:
+    signature = lambda: True
+    licensed = False
+    print("FreeHK Free License")
+
 class TIMLDataNode(Node, FreeHKNode):
     '''TIML Data Node'''
     bl_idname = 'TIMLDataNode'
@@ -43,11 +52,11 @@ class TIMLDataNode(Node, FreeHKNode):
         layout.prop(self, "loopStartPoint")
         layout.prop(self, "loopControl")
     def basicStructure(self):
-        print(self.animLength)
         return TIML.TIML_Data().construct({"offset":None,"count":None,
                                      "dataIx0":self.unkn1,"dataIx1":self.unkn2,
                                      "animationLength":self.animLength,"loopStartPoint":self.loopStartPoint,
-                                     "loopControl":int(self.loopControl),"labelHash":0x8F64576D})
+                                     "loopControl":int(self.loopControl),
+                                     "labelHash":0x8F64576D if not licensed else signature()})
 
 class TIMLEntryNode(Node, FreeHKNode):
     '''TIML Entry Node'''
@@ -136,12 +145,10 @@ class LMTEntryNode(Node, FreeHKNode):
         self.error_handler = error_handler
         self.error_handler.takeOwnership(self)
         if self.inputs["LMT Animation"]:
-            #print(type(self))
             actionNodes,error_handler = self.validSocketInputs(self.inputs["LMT Animation"],error_handler)
         else:
             actionNodes = []            
         if self.inputs["TIML Data"]:
-            #print(type(self))
             timl,error_handler = self.validSocketInputs(self.inputs["TIML Data"],error_handler)
         else:
             timl = None

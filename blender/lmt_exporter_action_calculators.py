@@ -106,10 +106,6 @@ class EncodingObject():
         
         maxima =  list(map(max,zip(*keyframeValues)))
         minima =  list(map(min,zip(*keyframeValues)))
-        print("Vec Limits")
-        print(maxima)
-        print(minima)
-        print(len(keyframeValues))
         boundary = self.basisRead([l-r for l,r in zip(maxima,minima)])
         self.boundary = boundary
         self.offset = self.basisRead(minima)

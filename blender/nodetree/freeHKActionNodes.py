@@ -61,8 +61,7 @@ class LMTActionNode(Node, FreeHKAnimationNode):
     def basicStructure(self):
         return self
 
-    def extend(self,null):
-        print("Node Input Action:",self.input_action)        
+    def extend(self,null):     
         bl = BoneList()
         bl.frameCount = 0
         bl.translation = [0,0,0,0]
@@ -141,7 +140,6 @@ class ExportTIMLTransformNode:
         for channel in inputchannels:
             indices = indices.union((int(kf.co[0]) for kf in channel.keyframe_points))
         #channels = [[],[],[],[]]
-        #print(indices)
         keyframes = {i:TIML.TIML_Color().construct({"value":[255,255,255,255],
                                           "controlL":None,
                                           "controlR":None,

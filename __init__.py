@@ -20,7 +20,15 @@ from .operators import timl_io,timl_ops,lmt_io,export_ops
 from .operators import lmt_rig_ops
 from .error_handling.errorLists import errorItems,errorTextLevel,errorDisplayLevel
 
-
+try:
+    from .app_license.license import licenseProperty,licenseUI
+    licensed = True
+except:
+    raise
+    licenseProperty = ''
+    licensed = False
+    def licenseUI(self,layout):
+        pass
 
 content=bytes("","UTF-8")
 bl_info = {
@@ -58,6 +66,7 @@ class FreeHKAddonPreferences(AddonPreferences):
     error_log_level = EnumProperty(name = "Filter Errors Output",items = errorDisplayLevel,default = "All")
     output_log = BoolProperty(name = "Log Export Info",default = True,description = "Write Export Process Information to a Log File")
     output_log_folder = StringProperty(name = "Export Output Log Directory",subtype = 'DIR_PATH')
+    if licensed:exec(licenseProperty)        
     def draw(self, context):
         layout = self.layout
         row = layout.row(align=True)
@@ -67,6 +76,8 @@ class FreeHKAddonPreferences(AddonPreferences):
         row.prop(self,"output_log")
         if self.output_log:
             row.prop(self,"output_log_folder")
+        if licensed:
+            licenseUI(self,layout)
         col = layout.column(align=True)
         col.prop(self,"graph_error")
         col.prop(self,"action_error")

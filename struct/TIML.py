@@ -340,10 +340,8 @@ def _extractTIML(stream,legacy = False):
     else:
         timlOffset = getTimlOffsets(file)
     for offset in timlOffset:
-        print(hex(offset))
         length = parseLength(file,offset)
         lengths.append(length)
-        #print(length)
         timls.append(TIML(fakeFile(file[offset:offset+length])))
     return timls,timlOffset,lengths
 

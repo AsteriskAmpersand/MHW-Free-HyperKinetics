@@ -6,6 +6,7 @@ Created on Wed Aug  4 03:13:08 2021
 """
 
 import bpy
+import os
 from bpy.props import EnumProperty
 from ..struct import TIML
 from ..blender.nodetree.freeHKNodeOps import LMTFILE,EFXFILE,TIMLFILE,FILE
@@ -51,8 +52,9 @@ class TreeExporter(bpy.types.Operator):
         node.error_handler.display()
         if node.error_handler.verifyExport():            
             filedata = nodeStructure.serialize()
-            
-        with open(node.filepath,"wb") as outf:
+        
+        outpath = os.path.realpath(bpy.path.abspath(node.filepath))
+        with open(outpath,"wb") as outf:
             outf.write(filedata)
     
     def generateTIML(self,timlData):

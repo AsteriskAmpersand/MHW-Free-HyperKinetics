@@ -5,6 +5,7 @@ Created on Thu Aug  5 06:17:45 2021
 @author: AsteriskAmpersand
 """
 import bpy
+import os
 from pathlib import Path
 from .errorLists import (error_types,error_map,
                             GRAPH,ACTION,FCURVE,
@@ -15,7 +16,7 @@ def ShowMessageBox(message = "", title = "Message Box", icon = 'INFO'):
         self.layout.label(message)
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
-
+separator = '='*32
 #Option to Output error log
 class ErrorLevel():
     def __init__(self,level):
@@ -128,7 +129,7 @@ class errorOwner():
         return self.tuple() < owner.tuple()
     def __eq__(self,owner):
         return self.tuple() == owner.tuple()
-       
+     
 class ErrorHandler():
     def __init__(self,owner,options = None):
         if options is None:
@@ -169,12 +170,8 @@ class ErrorHandler():
         self[-1].unsolve()
         self.valid = False
     def verifyGraph(self):
-        #self.rawprint()
-        #return True
         return self.valid
     def verifyAnimations(self):
-        #self.rawprint()
-        #return True
         return self.valid
     def verifyExport(self):
         return self.valid
@@ -189,18 +186,29 @@ class ErrorHandler():
     def display(self,output = print):
         grouped = self.groupFilterSortErrors()
         prev = None
+        output(separator)
+        try:
+            output(self.export_owner.name+" - "+os.path.realpath(bpy.path.abspath(self.export_owner.filepath)))
+        except:
+            output("Export Process Errors")
+        output(separator)
         for err in grouped:
             err.present(prev,self.errorTextLevel,output)
             prev = err
+        output(separator)
         return bool(grouped)
     def writeLog(self,exportpath,logpath):
-        outpath = logpath+Path(exportpath).stem+".txt"
+        cannonicalPath = os.path.realpath(bpy.path.abspath(logpath))
+        exportpath = os.path.realpath(bpy.path.abspath(exportpath))
+        outpath = cannonicalPath+'\\'+Path(exportpath).stem+".txt"
         try:
             with open(outpath,"w") as outf:
-                output = lambda x: outf.write(x)
+                output = lambda x: outf.write(str(x)+'\n')
                 self.display(output)
+            print("Wrote Error Log to file %s"%outpath)
         except:
-            print("[LOG ERROR] Log File Location unavailable %s"%outpath)            
+            print("[LOG ERROR] Log File Location unavailable %s"%outpath)   
+        
     def rawprint(self):
         for err in self.log:
             print(err)

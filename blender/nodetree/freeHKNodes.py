@@ -74,7 +74,6 @@ class FreeHKNode:
         self.error_handler = error_handler
         self.error_handler.takeOwnership(self)
         if self.inputs:
-            #print(type(self))
             validInputs,error_handler = self.validSocketInputs(self.inputs[self.__mainInput__],error_handler)
         else:
             validInputs = []        
@@ -89,10 +88,6 @@ class FreeHKNode:
         #Stop if FCurve or Action errors found
         if not error_handler.verifyAnimations():
             return None
-        #print(type(self))
-        #print(self.structure)
-        #print(substructure)
-        #print()
         return self.structure
 
 ### Node Categories ###
