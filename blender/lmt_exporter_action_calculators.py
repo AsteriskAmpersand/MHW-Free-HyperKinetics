@@ -93,7 +93,7 @@ class EncodingObject():
         return self.usage%3 == 0  
     def checkAxis(self,axis):
         if not self.isRotation(): return False
-        for keyframe in self.vector_keyframes:
+        for t,keyframe in self.vector_keyframes:
             if getattr(keyframe,axis) < self.eps: return False            
         return True
     def bounds(self):
@@ -102,8 +102,7 @@ class EncodingObject():
         keyframeValues = [vec
                           for t,vec in (self.vector_keyframes[1:] 
                                       if not self.isRoot() 
-                                      else self.vector_keyframes[1:-1])]
-        
+                                      else self.vector_keyframes[1:-1])]        
         maxima =  list(map(max,zip(*keyframeValues)))
         minima =  list(map(min,zip(*keyframeValues)))
         boundary = self.basisRead([l-r for l,r in zip(maxima,minima)])
@@ -156,7 +155,7 @@ class EncodingObject():
             return 14
         #or just set everything to 14
     def calculateNonRotationType(self,tether):
-        if self.blindUsage == 1:
+        if self.usage%3 == 1:
             #Translation
             comparisonPoint = max(self.bounds())
             if comparisonPoint < 30:
@@ -165,7 +164,7 @@ class EncodingObject():
                 return 4
             else:
                 return 3
-        if self.blindUsage == 2:
+        if self.usage%3 == 2:
             #Scale
             comparisonPoint = max(self.bounds())
             if comparisonPoint > 2.2:

@@ -137,8 +137,8 @@ platformDefaults = {
                                 ("Head",252,4,"Translation"),
                                 ("Right Wrist",247,12,"Transform"),
                                 ("Left Wrist",248,8,"Transform"),
-                                ("Right Leg",249,20,"Ground"),
-                                ("Left Leg",250,16,"Ground")],
+                                ("Right Leg",249,20,"Transform"),
+                                ("Left Leg",250,16,"Transform")],
                     
                     "Monster2":[("Neck Base",251,3,"Translation"),
                                 ("Head",252,3,"Translation"),
@@ -174,8 +174,53 @@ class AnimationMissing(Exception):
 #Source is a MHW Metarig with exotic animations
 #Target is a MHW Basic Rig with orthogonal arm elements etc.
 
-source = ""
-target = ""
+#source = ""
+#target = ""
+
+def clearConstraints(skeleton,action):
+    delete = set()
+    valid = {}
+    for bone in skeleton.pose.bones:
+        if bone not in valid:
+            valid[bone] = set()
+        for constraint in bone.constraints:
+            if constraint.type == "COPY_ROTATION":
+                valid[bone].add("rotation_euler")
+                valid[bone].add("rotation_quaternion")
+            elif constraint.type == "COPY_LOCATION":
+                valid[bone].add("location")
+            elif constraint.type == "COPY_SCALE":
+                valid[bone].add("scale")
+            elif constraint.type == "COPY_TRANSFORMS":
+                valid[bone].add("rotation_euler")
+                valid[bone].add("rotation_quaternion")
+                valid[bone].add("location")
+                valid[bone].add("scale")
+            else:
+                raise KeyError(constraint.type)
+        print(bone.name)
+        print(valid[bone])
+            
+    
+    for fcurve in action.fcurves:
+        if "." not in fcurve.data_path:
+            continue
+        d = fcurve.data_path.split(".")
+        bone,transform = '.'.join(d[:-1]),d[-1]
+        pbone = skeleton.path_resolve(bone)
+        if not(pbone in valid and transform in valid[pbone]):
+            delete.add(fcurve)
+        if transform == "scale":
+            if all((kf.co[1] == 1 for kf in fcurve.keyframe_points)):
+                delete.add(fcurve)
+            
+    for c in delete:
+        action.fcurves.remove(c)
+            
+    for bone in skeleton.pose.bones:
+        constraints = list(bone.constraints)
+        for c in constraints:
+            bone.constraints.remove(c)
 
 def bakeAnimation(context,target):
     context.scene.update()
@@ -191,10 +236,13 @@ def bakeAnimation(context,target):
                      step=1, 
                      only_selected=False, 
                      visual_keying=True, 
-                     clear_constraints=True, 
+                     clear_constraints=False, 
                      clear_parents=False, 
                      use_current_action=True, 
                      bake_types={'POSE'})
+    clearConstraints(active,active.animation_data.action)
+    #Don't Clear Constraints
+    #Use them to know what parts of the animation to delete after the baking process
     target.select = False
     for obj in selection: obj.select = True
     bpy.ops.object.mode_set(mode=prev_mode) # restore
@@ -212,6 +260,8 @@ def getBoneFunction(bone):
         return bone.bone["boneFunction"]
     return None
 
+
+trackerName = "__Animation_Tracker_Bone__"
 class RigAnimationTransfer(bpy.types.Operator):
     bl_idname = "freehk.rig_transfer"
     bl_label = "Rig Transfer"
@@ -240,19 +290,28 @@ class RigAnimationTransfer(bpy.types.Operator):
                     boneMapping[l] = boneMapping[r]
         return
     
+    humanoidCases = {"CTRL_Root":-1,
+                        "CTRL_Leg_IK_L":250,
+                        "CTRL_Leg_IK_R":249,
+                        "CTRL_Hand_IK_L":248,
+                        "CTRL_Hand_IK_R":247
+                        }
+    
     def addSpecialCases(self,mapper,bone):
         if not self.humanoid:
             return
         candidate = None
-        candidates = {"CTRL_Root":-1,
-                        "CTRL_Leg_IK_L":250,
-                        "CTRL_Leg_IK_R":249,
-                        "CTRL_Hand_IK_L":248,
-                        "CTRL_Hand_IK_R":247}
+        candidates = {trackerName+c:v for c,v in self.humanoidCases.items()}
         if bone.name in candidates:
             candidate = candidates[bone.name]
         if candidate and candidate not in mapper:
-            mapper[candidate] = bone    
+            mapper[candidate] = bone
+            
+    def orthogonalizeSpecialCases(self,bone):
+        if bone.name in self.humanoidCases:
+            return self.humanoidCases[bone.name]
+        else:
+            return None
     
     def groundedConstraint(self,bone,target):
         targetArmature,targetBone = target
@@ -354,6 +413,14 @@ class RigAnimationTransfer(bpy.types.Operator):
                         constraintMaker(targetMapper[bf],(copy,subtarget))
         return
     
+    def calculateDelta(self,bf,boneMapper):
+        if bf in boneMapper:
+            orthogonal = boneMapper[bf]
+            delta = (orthogonal.matrix*Vector((0,1,0,0))).normalized().to_3d()
+        else:
+            delta = Vector((0,1,0))
+        return delta
+    
     def generateOrthogonalizer(self,copy,target):
         boneMapper = {}
         for bone in target.pose.bones:
@@ -368,15 +435,19 @@ class RigAnimationTransfer(bpy.types.Operator):
         additions = []
         ebs = copy.data.edit_bones
         for bone,ebone in zip(copy.pose.bones,ebs):
-            bf = getBoneFunction(bone)
+            bf = getBoneFunction(bone)            
             if bf is not None:
-                if bf in boneMapper:
-                    orthogonal = boneMapper[bf]
-                    delta = (orthogonal.matrix*Vector((0,1,0,0))).normalized().to_3d()
-                else:
-                    delta = Vector((0,1,0))
-                head = bone.tail
-                additions.append(("__Animation_Tracker_Bone__"+bone.name,head,delta,ebone,bf))
+                delta = self.calculateDelta(bf,boneMapper)
+                head = bone.head
+                additions.append((trackerName+bone.name,head,delta,ebone,bf))
+            elif self.humanoid:
+                bf = self.orthogonalizeSpecialCases(bone)
+                if bf is not None:
+                    delta = self.calculateDelta(bf,boneMapper)
+                    head = bone.head
+                    additions.append((trackerName+bone.name,head,delta,ebone,None))
+                
+                
     
         orthogonal = {}
         for name,head,delta,parent,bf in additions:
@@ -531,7 +602,9 @@ class RigAnimationTransfer(bpy.types.Operator):
             return {'FINISHED'}
         source = bpy.data.objects[self.sourceName]
         target = bpy.data.objects[self.targetName]
-        if not self.source.animation_data or not self.source.animation_data.action:
+        self.source = source
+        self.target = target
+        if not source.animation_data or not source.animation_data.action:
             return {'FINISHED'}
         if self.cat:
             functionalizeArmature(source)
@@ -587,7 +660,7 @@ def applyTransformSkeleton(skeleton,context):
     for mesh in context.scene.objects:
         if mesh.type == "MESH":
             for mod in mesh.modifiers:
-                if mod.type == "ARMATURE" and mod.object == source:
+                if mod.type == "ARMATURE" and mod.object == skeleton:
                     applyTransform(mod)
                         
 class CATBoneFunction(bpy.types.Operator):
