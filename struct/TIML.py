@@ -474,26 +474,21 @@ class Legacy_TIML_EFX(TIML_EFX):
 
 if __name__ == "__main__":
     from pathlib import Path
+    import Lmt
     chunk = r"E:\MHW\chunk"
-            
+    suborderings = []
     for file in list(Path(chunk).rglob("*.efx")):
         print(file)
         with open(file,"rb") as inf:
             efx = EFX().marshall(inf)
-            print(list(map(hex,efx.timl_offsets)))
-            inf.seek(0)
-            tefx = TIML_EFX().marshall(inf)     
-            print (len(tefx.timlData))
-            #for timl in tefx.timlData:                
-                #print(type(timl))
-                #raise
+            
                 
     for file in list(Path(chunk).rglob("*.timl")):
         print(file)
         with open(file,"rb") as inf:
-            #pass
-            #print(file)
-            bind = inf.read()
-            inf.seek(0)
             timl = TIML(inf)
-            assert timl.serialize() == bind
+            
+            
+    for file in list(Path(chunk).rglob("*.lmt")):
+        l = Lmt.LMT.parseFile(file)
+        

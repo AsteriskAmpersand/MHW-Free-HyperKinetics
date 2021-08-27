@@ -12,8 +12,7 @@ from .freeHKNodes import FreeHKNode,align
 from ..timl_importer import interpolationMapping
 from ..timl_controller import timl_typemap,timl_propmap
 from ..lmt_exporter import LMTActionParser
-from ...struct import TIML,Lmt
-
+from ...struct import TIML,Lmt,TIMLPropertyOrder
 
 class KeyframeSynchronizationError(Exception):
     pass
@@ -23,6 +22,12 @@ def filter_TIML_actions(self,object):
 
 def filter_Non_TIML_actions(self,object): 
     return object.bl_rna.name == "Action" and not filter_TIML_actions(self,object)
+
+def TIML_Reorder(key):
+    if key in TIMLPropertyOrder.TIML_MetaOrder:
+        return TIMLPropertyOrder.TIML_MetaOrder[key]
+    else:
+        return len(TIMLPropertyOrder.TIML_MetaOrder)
 
 class FreeHKAnimationNode(FreeHKNode):
     # Copy function to initialize a copied node from an existing one.
@@ -313,7 +318,11 @@ class ExportTIMLTypesNode:
                 mapper[dp].aggregate(fcurve)
         for value in mapper.values():
             value.clean()
-        return mapper.values()#[mapper[key] for key in sorted(mapper)]
+        if action.freehk.timl_reorder == "GAME":
+            curves = [mapper[key] for key in sorted(mapper,key= lambda k: TIML_Reorder(k))]
+        else:
+            curves = mapper.values()
+        return curves#[mapper[key] for key in sorted(mapper)]
     def structure(self):
         struct = {"offset":self.offset,"count":self.count,"timelineParameterHash":self.timelineParameterHash,"unkn0":self.unkn0}
         typing = TIML.TIML_Type().construct(struct)#.serialize()

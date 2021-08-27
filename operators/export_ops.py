@@ -10,6 +10,7 @@ import os
 from bpy.props import EnumProperty
 from ..struct import TIML
 from ..blender.nodetree.freeHKNodeOps import LMTFILE,EFXFILE,TIMLFILE,FILE
+from ..blender.nodetree.freeHKNodes import globalCacheClear
 
 class TreeExporter(bpy.types.Operator):
     bl_idname = "freehk.export"
@@ -91,20 +92,26 @@ class TreeExporter(bpy.types.Operator):
     def execute(self,context):
         addon = context.user_preferences.addons[self.addon_key]
         self.addon_props = addon.preferences
+        globalCacheClear()
         for node in self.getOutputNodes(context):
-            node.cleanup()
-            #try:
-            if node.bl_idname == TIMLFILE:
-                self.TIMLExport(node)
-            if node.bl_idname == EFXFILE:
-                self.EFXExport(node)
-            if node.bl_idname == LMTFILE:
-                self.LMTExport(node)
-            #except Exception as e:
-            #    raise
+            try:
+                #node.cleanup()
+                #try:
+                if node.bl_idname == TIMLFILE:
+                    self.TIMLExport(node)
+                if node.bl_idname == EFXFILE:
+                    self.EFXExport(node)
+                if node.bl_idname == LMTFILE:
+                    self.LMTExport(node)
+                #except Exception as e:
+                #    raise
+                #finally:
+                #    node.cleanup()
+                #node.cleanup()
+            except:
+                pass
             #finally:
-            #    node.cleanup()
-            node.cleanup()
+        globalCacheClear()
         return {'FINISHED'}
     def getOutputNodes(self,context):
         criteria = {"selected":lambda x: x.select and x.bl_idname in FILE,

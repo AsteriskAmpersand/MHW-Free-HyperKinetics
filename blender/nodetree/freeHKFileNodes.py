@@ -106,6 +106,9 @@ class FreeHKOutputNode(FreeHKNode):
             entryCount = max(len(spares) + len(entryIndices),max(entryIndices)+1)      
         return entryCount,entryIndices,spares
     def export(self,error_handler = None):
+        cache = self.cacheCheck()
+        if cache is not None:
+            return cache
         if self.customizeExport:
             options = self
         else:
@@ -118,7 +121,7 @@ class FreeHKOutputNode(FreeHKNode):
         entryCount,entryIndices,spares = self.getEntries(error_handler)
         #TODO - Check for any and all Graph Errors
         #Stop if graph errors found
-        self.structure = self.basicStructure()
+        structure = self.basicStructure()
         substructure = []
         for i in range(entryCount):
             if i in entryIndices:
@@ -130,8 +133,9 @@ class FreeHKOutputNode(FreeHKNode):
                 substructure.append(entry.export())
             else:
                 substructure.append(None)
-        self.structure.extend(substructure)        
-        return self.structure
+        structure = structure.extend(substructure)    
+        self.cacheAdd(structure)
+        return structure
         
 
 class LMTFileNode(Node, FreeHKOutputNode):

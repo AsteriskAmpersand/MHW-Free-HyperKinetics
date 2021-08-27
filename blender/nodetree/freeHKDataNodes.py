@@ -19,7 +19,7 @@ except:
     licensed = False
     print("FreeHK Free License")
 
-class TIMLDataNode(Node, FreeHKNode):
+class TIMLDataNode(FreeHKNode, Node):
     '''TIML Data Node'''
     bl_idname = 'TIMLDataNode'
     bl_label = "TIML Data Node"
@@ -58,7 +58,7 @@ class TIMLDataNode(Node, FreeHKNode):
                                      "loopControl":int(self.loopControl),
                                      "labelHash":0x8F64576D if not licensed else signature()})
 
-class TIMLEntryNode(Node, FreeHKNode):
+class TIMLEntryNode(FreeHKNode, Node):
     '''TIML Entry Node'''
     bl_idname = 'TIMLEntryNode'
     bl_label = "TIML Entry Node"
@@ -82,7 +82,7 @@ class TIMLEntryNode(Node, FreeHKNode):
         data.id = self.entryNum
         return data
 
-class EFXEntryNode(Node, FreeHKNode):
+class EFXEntryNode(FreeHKNode,Node):
     '''EFX Data Node'''
     bl_idname = 'EFXEntryNode'
     bl_label = "EFX Entry Node"
@@ -91,7 +91,6 @@ class EFXEntryNode(Node, FreeHKNode):
 
     entryNum = bpy.props.IntProperty(name="EFX Entry Number")
     def init(self, context):
-        #self.inputs.new('CustomSocketType', "Hello")
         inputs = self.inputs.new('FreeHKTimlDataSocket',"TIML Data","TIML_Data")
         inputs.link_limit = 0
         self.outputs.new('FreeHKEFXEntrySocket', "EFX Entry","EFX_Entry")
@@ -106,7 +105,7 @@ class EFXEntryNode(Node, FreeHKNode):
 def flagMake(flags):
     return sum((f<<(7-ix) for ix,f in enumerate(flags)))
 
-class LMTEntryNode(Node, FreeHKNode):
+class LMTEntryNode(FreeHKNode,Node):
     '''LMT Data Node'''
     bl_idname = 'LMTEntryNode'
     bl_label = "LMT Entry Node"
@@ -142,6 +141,9 @@ class LMTEntryNode(Node, FreeHKNode):
                          })
         return entry
     def export(self,error_handler):
+        cache = self.cacheCheck()
+        if cache is not None:
+            return cache
         self.error_handler = error_handler
         self.error_handler.takeOwnership(self)
         if self.inputs["LMT Animation"]:
@@ -153,7 +155,7 @@ class LMTEntryNode(Node, FreeHKNode):
         else:
             timl = None
             
-        self.structure = self.basicStructure()
+        structure = self.basicStructure()
         #Stop if Graph error_handler found
         if not error_handler.verifyGraph():
             return []
@@ -161,11 +163,12 @@ class LMTEntryNode(Node, FreeHKNode):
             timl = next(iter(timl)).export(error_handler)
         if actionNodes:
             actionNode = next(iter(actionNodes)).export(error_handler)
-        self.structure = self.structure.extend(actionNode,timl)
+        structure = structure.extend(actionNode,timl)
         #Stop if FCurve or Action error_handler found
         if not error_handler.verifyAnimations():
             return []  
-        return self.structure
+        self.cacheAdd(structure)
+        return structure
 
 classes = [
     TIMLDataNode, LMTEntryNode, EFXEntryNode,  TIMLEntryNode, 

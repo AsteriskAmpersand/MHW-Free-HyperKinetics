@@ -32,6 +32,12 @@ def colorpick(idname):
             return TIML_COLOR
     return GENERIC_COLOR
 
+structureCache = {}
+
+def globalCacheClear():
+    for key in list(structureCache.keys()):
+        del structureCache[key]
+
 class FreeHKNode:
     def __init__(self,*args,**kwargs):
         self.use_custom_color = True
@@ -63,12 +69,26 @@ class FreeHKNode:
     def getInputs(self,nodeSocket,errors):
         return self.validSocketInputs(nodeSocket,errors)[0]
     def cleanup(self):
-        self.structure = None
+        self.cacheClear()
         inputLinks = self.validInputs()
         for nodeList in inputLinks.values():
             for entryNode in nodeList:
                 entryNode.cleanup()
+    def __createErrorHandler__(self):
+        return ErrorHandler(self)
+    def cacheCheck(self):
+        return structureCache[self] if self in structureCache else None
+    def cacheClear(self):
+        if self in structureCache:
+            del structureCache[self]
+    def cacheAdd(self,structure):
+        
+        structureCache[self] = structure
     def export(self,error_handler = None):
+        
+        cache = self.cacheCheck()
+        if cache is not None:
+            return cache
         if error_handler is None:
             error_handler = ErrorHandler(self)
         self.error_handler = error_handler
@@ -77,18 +97,19 @@ class FreeHKNode:
             validInputs,error_handler = self.validSocketInputs(self.inputs[self.__mainInput__],error_handler)
         else:
             validInputs = []        
-        self.structure = self.basicStructure()
+        structure = self.basicStructure()
         substructure = []
         for i in validInputs:
             substructure.append(i.export(error_handler))
         #Stop if Graph errors found
         if not error_handler.verifyGraph():
             return None
-        self.structure = self.structure.extend(substructure)
+        structure  = structure.extend(substructure)        
         #Stop if FCurve or Action errors found
         if not error_handler.verifyAnimations():
             return None
-        return self.structure
+        self.cacheAdd(structure)
+        return structure
 
 ### Node Categories ###
 import nodeitems_utils

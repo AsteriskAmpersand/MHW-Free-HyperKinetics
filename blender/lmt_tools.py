@@ -146,6 +146,7 @@ class AnimData(bpy.types.PropertyGroup):
     #loopFrame = bpy.props.IntProperty(name="Loop Frame")
     frameCount = bpy.props.IntProperty(name="Frame Count",default = -1,min = -1)
     tetherFrame = bpy.props.PointerProperty(name="Tether Armature",type = bpy.types.Object,poll = armaturePoll)
+    timl_reorder = bpy.props.EnumProperty(name = "TIML Order",items = [("BLENDER","BLENDER",""),("GAME","GAME","")],default = "BLENDER")
 
 class KeyframeData(bpy.types.PropertyGroup):
     #lControl, rControl, interpolationMethod
@@ -220,7 +221,13 @@ class ActionDataTools(bpy.types.Panel):
             #layout.label("FreeHK TIML Paramaters")
             layout.prop(action.freehk,"timelineParam",text = "FreeHK Timeline Type")
             layout.prop(action.freehk,"unkn0",text = "FreeHK Unknown Parameter")
-            layout.separator()
+            
+            col = layout.column(align = True)
+            col.label("Property Export Order")
+            row = col.row()
+            row.prop(action.freehk,"timl_reorder",expand=True) 
+            
+            #layout.separator()
             layout.label(text = "TIML Remappping")
             col = layout.column(align = True)
             col.prop(action.freehk,"transx")
