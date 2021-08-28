@@ -58,6 +58,8 @@ def completeBasis(action):
 def previewStrip(self,obj,actions):
     if not obj:
         return
+    if obj.animation_data is None:
+        obj.animation_data_create()
     track = obj.animation_data.nla_tracks.new()
     length = 0
     #scene_length = bpy.context.scene.frame_end

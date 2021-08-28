@@ -12,6 +12,19 @@ from ..common.HashUtils import hashResolver
 
 interpolationMapping = ['CONSTANT','LINEAR','QUAD','CUBIC','QUART','EXPO','SINE']
 
+bigFlags = [
+      150806694,#            mFlag
+     2575924291,#         mTrigger
+     4027018852,#           mFlag6
+     2154666731,#           mFlag3
+     4150962813,#           mFlag2
+     1852046279,#           mFlag1
+      503910216,#           mFlag4
+     1762541534,#           mFlag5
+     2768909048,#    TargetReqNo A
+     3787782803,#  ChangeLeftJntNo
+     ]
+
 #timl.dataHeaders[].data
 #                   .types[].transforms[].keyframes[]
 
@@ -20,6 +33,44 @@ class dummyKeyframe():
         for attr in keyframe.__dict__.keys():
             setattr(self,attr,getattr(keyframe,attr))
 
+def TIMLColorImport(transform,action):
+    for i in range(4):
+        transform.datatype[1] = i
+        fcurve = createTIMLFcurve(action,transform)
+        for keyframe in transform.keyframes:
+            kf = dummyKeyframe(keyframe)
+            kf.value = kf.value[i]/255
+            createTIMLKeyframes(fcurve,kf)
+        fcurve.update()
+
+mask = 0xFFFF 
+def TIMLSplitter(val):
+    return (mask&val,((mask<<16)&val)>>16)   
+def TIMLJoin(l,r):
+    return (l + (r<<16)) & 0xFFFFFFFF
+
+def TIMLFlagImport(transform,action):
+    splitter = TIMLSplitter    
+    transform.datatype[1] = 0
+    l_fcurve = createTIMLFcurve(action,transform)
+    transform.datatype[1] = 1
+    r_fcurve = createTIMLFcurve(action,transform)
+    
+    for keyframe in transform.keyframes:
+        l_kf, r_kf = dummyKeyframe(keyframe),dummyKeyframe(keyframe)
+        l_kf.controlL, r_kf.controlL = splitter(keyframe.controlL)
+        l_kf.controlR, r_kf.controlR = splitter(keyframe.controlR)
+        #print(keyframe.value)
+        l,r = splitter(keyframe.value)
+        #print(l,r)
+        #print((l<<16) + r)
+        #print()
+        l_kf.value, r_kf.value = splitter(keyframe.value)
+        createTIMLKeyframes(l_fcurve,l_kf)
+        createTIMLKeyframes(r_fcurve,r_kf)
+    l_fcurve.update()
+    r_fcurve.update()
+        
 def TIMLStructure(processedTIML,tree,entry=[]):#controller
     dataNodes = []
     for data in processedTIML:        
@@ -29,14 +80,9 @@ def TIMLStructure(processedTIML,tree,entry=[]):#controller
             tree.createTIMLActionNode(action,outputs = [dataNode])
             for transform in typing.transforms:
                 if transform.dataType == 3:
-                    for i in range(4):
-                        transform.datatype[1] = i
-                        fcurve = createTIMLFcurve(action,transform)
-                        for keyframe in transform.keyframes:
-                            kf = dummyKeyframe(keyframe)
-                            kf.value = kf.value[i]/255
-                            createTIMLKeyframes(fcurve,kf)
-                        fcurve.update()
+                    TIMLColorImport(transform,action)
+                elif transform.datatypeHash in bigFlags:
+                    TIMLFlagImport(transform,action)
                 else:
                     fcurve = createTIMLFcurve(action,transform)
                     for keyframe in transform.keyframes:

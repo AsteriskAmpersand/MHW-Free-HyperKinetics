@@ -109,6 +109,7 @@ class TreeExporter(bpy.types.Operator):
                 #    node.cleanup()
                 #node.cleanup()
             except:
+                raise
                 pass
             #finally:
         globalCacheClear()

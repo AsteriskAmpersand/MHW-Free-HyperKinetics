@@ -9,7 +9,7 @@ import bpy
 import math
 from bpy.types import Node
 from .freeHKNodes import FreeHKNode,align
-from ..timl_importer import interpolationMapping
+from ..timl_importer import interpolationMapping, bigFlags,TIMLJoin
 from ..timl_controller import timl_typemap,timl_propmap
 from ..lmt_exporter import LMTActionParser
 from ...struct import TIML,Lmt,TIMLPropertyOrder
@@ -111,11 +111,13 @@ class ExportTIMLTransformNode:
         self.offset = None
         self.count = None
         self.datatypeHash = int(datapath[1:],16)
-        self.dataType = timl_typemap[datapath]
+        self.dataType = timl_typemap[datapath]%5
         self.dataClass = TIML.TIML_DataFrame(self.dataType)
         self.dataTransform = (lambda x: x) if self.dataType == 2 else (lambda x: int(x))
         if self.dataType == 3:
             #self.keyframes = [[],[],[],[]]
+            self.keyframes = [fcurve]
+        elif self.datatypeHash in bigFlags:
             self.keyframes = [fcurve]
         else:
             self.keyframes = fcurve.keyframe_points
@@ -123,8 +125,47 @@ class ExportTIMLTransformNode:
     def aggregate(self,fcurve):
         if self.dataType == 3:
             self.keyframes.append(fcurve)
+        elif self.datatypeHash in bigFlags:
+            self.keyframes.append(fcurve)
         else:
             self.keyframes.extend(fcurve.keyframe_points)
+    def frameParam(self,frame):
+        return list(map(int,[frame.co[1],frame.back,frame.period,interpolationMapping.index(frame.interpolation)]))
+    def parseBigFlag(self, inputchannels, kfs):
+        filteredInputs = [None,None]
+        for channel in inputchannels:
+            if channel.array_index in [0,1]:
+                filteredInputs[channel.array_index] = channel                
+        channelFrames = {}
+        for channel in filteredInputs:
+            if not channel:
+                continue            
+            for kf in channel.keyframe_points:
+                t = int(kf.co[0])
+                if t not in channelFrames:
+                    channelFrames[t] = [None,None]
+                channelFrames[t][channel.array_index] = kf            
+        #keyframes = []
+        pl,pr = 0,0
+        cll,clr = 0,0
+        crl,crr = 0,0
+        trns = 0       
+        for i,(l,r) in channelFrames.items():
+            if r is not None:
+                pr,clr,crr,trns = self.frameParam(r)     
+            if l is not None:
+                pl,cll,crl,trns = self.frameParam(l)
+            v,cl,cr = TIMLJoin(pl,pr),TIMLJoin(cll,clr),TIMLJoin(crl,crr)
+            frame = TIML.TIML_Int().construct({"value":v,
+                                  "controlL":cl,
+                                  "controlR":cr,
+                                  "transition":trns,
+                                  "frameTiming":i,
+                                  "dataType":self.dataType})
+            kfs.append(frame)
+        #return keyframes
+        
+                
     def parseColors(self,inputchannels,kfs):
         if self.error_handler.fcurveError.fix:
             self.synchronizeColors(inputchannels,kfs)
@@ -176,8 +217,7 @@ class ExportTIMLTransformNode:
             for t in missingIndices:
                 keyframes[t][channel.array_index] = int(255*channel.evaluate(t)         )       
             #channels[channel.array_index] = [channel.evaluate(i) for i in indices]
-        kfs.extend(keyframes.values())
-        
+        kfs.extend(keyframes.values())        
     def blindParseColors(self,inputchannels,kfs):
         for kr,kg,kb,ka in zip(*inputchannels):
                 keyf = self.mergeColor(kr,kg,kb,ka)
@@ -247,6 +287,8 @@ class ExportTIMLTransformNode:
         rotTrans = (lambda x: math.degrees(x)) if self.rot else (lambda x: x)
         if self.dataType == 3:
             self.parseColors(list(sorted(self.keyframes,key = lambda x: x.array_index)),kfs)
+        elif self.datatypeHash in bigFlags:
+            self.parseBigFlag(list(sorted(self.keyframes,key = lambda x: x.array_index)),kfs)
         else:
             for kf in sorted(self.keyframes,key = lambda x:x.co[0]):
                 interpolate = self.checkInterpolate(kf)
