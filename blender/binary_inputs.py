@@ -51,6 +51,7 @@ class InputEditorProperties(bpy.types.PropertyGroup):
     datapath = bpy.props.EnumProperty( items = bigFlagCheck,name = "Input Property")
     inputs = bpy.props.CollectionProperty(type=KeyframeChannels)
     show_unused = bpy.props.BoolProperty(name = "Show Unused Channels", default = False)
+    update_parameters = bpy.props.BoolProperty(name = "Update FreeHK Parameter", default = True)
 
 class InputEditorGet(bpy.types.Operator):
     bl_idname = "freehk_inputs.get"
@@ -134,11 +135,13 @@ class InputEditorSet(bpy.types.Operator):
             kp[ix].period = 0
             kp[ix].interpolation = interpolationMapping[5]
 
-    def replaceKeyframes(self,kfdic,framelist):
-        print(framelist)
+    def replaceKeyframes(self,kfdic,framelist,update):
+        _,last = framelist[-1]
         for t,kf in framelist:
             keyframe = kfdic[t]
-            keyframe.co[1] == kf
+            keyframe.co[1] = kf
+            if update:
+                keyframe.back = last
 
     def execute(self, context):
         frames,findices = self.compileFrames(context)
@@ -151,12 +154,9 @@ class InputEditorSet(bpy.types.Operator):
                 indices = {round(k.co[0]):k for k in fcurve.keyframe_points}
                 actual_indices = set(indices.keys())
                 if actual_indices == findices[ix]:
-                    print("Replacing")
-                    self.replaceKeyframes(indices,frames[ix])
+                    self.replaceKeyframes(indices,frames[ix],editor.update_parameters)
                 else:
-                    print("Remaking")
-                    self.newKeyframes(fcurve.keyframe_points,frames[ix])   
-            fcurve.update()
+                    self.newKeyframes(fcurve.keyframe_points,frames[ix])         
         for i,create in enumerate(found):
             if create:
                 fcurve = action.fcurves.new(data_path = editor.datapath, index=i)
@@ -207,7 +207,9 @@ class TIMLControllerObjectPanel(bpy.types.Panel):
         row.operator("freehk_inputs.get")
         row.operator("freehk_inputs.set")
         layout.prop(input_editor,"datapath")
-        layout.prop(input_editor,"show_unused")
+        row = layout.row(align=True)
+        row.prop(input_editor,"show_unused")
+        row.prop(input_editor,"update_parameters")
         for ix,keyframe_channel in enumerate(input_editor.inputs):
             if input_editor.show_unused or not keyframe_channel.hide:
                 col = layout.column(align=True)
