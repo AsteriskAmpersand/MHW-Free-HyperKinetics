@@ -121,7 +121,7 @@ class InputEditorSet(bpy.types.Operator):
         uindices = set((t for t,f in upper))
         return (lower,upper),(lindices,uindices)
 
-    def newKeyframes(self,kp,framelist):   
+    def newKeyframes(self,kp,framelist):
         kfs = [k for k in kp]
         for k in reversed(kfs):
             try: kp.remove(k)
@@ -135,6 +135,7 @@ class InputEditorSet(bpy.types.Operator):
             kp[ix].interpolation = interpolationMapping[5]
 
     def replaceKeyframes(self,kfdic,framelist):
+        print(framelist)
         for t,kf in framelist:
             keyframe = kfdic[t]
             keyframe.co[1] == kf
@@ -150,9 +151,12 @@ class InputEditorSet(bpy.types.Operator):
                 indices = {round(k.co[0]):k for k in fcurve.keyframe_points}
                 actual_indices = set(indices.keys())
                 if actual_indices == findices[ix]:
+                    print("Replacing")
                     self.replaceKeyframes(indices,frames[ix])
                 else:
-                    self.newKeyframes(fcurve.keyframe_points,frames[ix])         
+                    print("Remaking")
+                    self.newKeyframes(fcurve.keyframe_points,frames[ix])   
+            fcurve.update()
         for i,create in enumerate(found):
             if create:
                 fcurve = action.fcurves.new(data_path = editor.datapath, index=i)
