@@ -16,6 +16,8 @@ from .blender.nodetree import freeHKActionNodes,freeHKDataNodes,freeHKFileNodes
 from .blender import timl_controller
 from .blender import lmt_tools
 from .blender import lmt_operators
+from .blender import binary_tools
+from .blender import binary_inputs
 from .operators import timl_io,timl_ops,lmt_io,export_ops
 from .operators import lmt_rig_ops
 from .error_handling.errorLists import errorItems,errorTextLevel,errorDisplayLevel
@@ -64,6 +66,7 @@ class FreeHKAddonPreferences(AddonPreferences):
     fcurve_error = EnumProperty(name = "FCurve Error Handling",items = errorItems,default = "Fix")
     error_text_level = EnumProperty(name = "Error Descriptiveness Level",items = errorTextLevel,default = "Verbose")
     error_log_level = EnumProperty(name = "Filter Errors Output",items = errorDisplayLevel,default = "All")
+    export_hidden = BoolProperty(name = "Export Muted F-Curves", default = True, description = "Include Muted F-Curves on Export")
     output_log = BoolProperty(name = "Log Export Info",default = True,description = "Write Export Process Information to a Log File")
     output_log_folder = StringProperty(name = "Export Output Log Directory",subtype = 'DIR_PATH')
     if licensed:exec(licenseProperty)        
@@ -85,12 +88,14 @@ class FreeHKAddonPreferences(AddonPreferences):
         col = layout.column(align=True)
         col.prop(self,"error_text_level")
         col.prop(self,"error_log_level")
+        col = layout.column(align=True)
+        col.prop(self,"export_hidden")
 
 modules = [timl_controller,lmt_tools,
            freeHKTree,freeHKSockets,freeHKNodes,freeHKNodeTools,
            freeHKActionNodes,freeHKDataNodes,freeHKFileNodes,
            timl_io,timl_ops,lmt_io,lmt_operators,export_ops,
-           lmt_rig_ops
+           lmt_rig_ops,binary_tools,binary_inputs
            ]
 classes = []
 exportFunctions = [] 

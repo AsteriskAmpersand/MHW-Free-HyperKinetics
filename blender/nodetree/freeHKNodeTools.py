@@ -160,6 +160,8 @@ class ExportSettings(bpy.types.Panel):
         col = layout.column(align=True)
         col.prop(addon.preferences,"error_text_level")
         col.prop(addon.preferences,"error_log_level")
+        col = layout.column(align=True)
+        col.prop(addon.preferences,"export_hidden")
 
 #layout.operator("freehk.export",icon_value=pcoll["FREEHK"].icon_id,text="Export")
 class TreeTools(bpy.types.Panel):

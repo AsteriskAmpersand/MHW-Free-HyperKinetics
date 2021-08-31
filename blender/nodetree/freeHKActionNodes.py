@@ -349,15 +349,16 @@ class ExportTIMLTypesNode:
         remap = self.compileRemap(action)
         mapper = {}
         for fcurve in action.fcurves:
-            dp,ix = fcurve.data_path,fcurve.array_index
-            dp = remap[(dp,ix)] if (dp,ix) in remap else dp.split(".")[-1]
-            if dp not in mapper:
-                #try:
-                mapper[dp] = ExportTIMLTransformNode(fcurve,dp,"rotation_euler" in fcurve.data_path,self.error_handler)#.structure()
-                #except:
-                #    pass
-            else:
-                mapper[dp].aggregate(fcurve)
+            if self.error_handler.exportHidden or not fcurve.mute:
+                dp,ix = fcurve.data_path,fcurve.array_index
+                dp = remap[(dp,ix)] if (dp,ix) in remap else dp.split(".")[-1]
+                if dp not in mapper:
+                    #try:
+                    mapper[dp] = ExportTIMLTransformNode(fcurve,dp,"rotation_euler" in fcurve.data_path,self.error_handler)#.structure()
+                    #except:
+                    #    pass
+                else:
+                    mapper[dp].aggregate(fcurve)
         for value in mapper.values():
             value.clean()
         if action.freehk.timl_reorder == "GAME":

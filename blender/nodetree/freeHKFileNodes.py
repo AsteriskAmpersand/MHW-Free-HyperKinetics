@@ -23,6 +23,7 @@ action_error = EnumProperty(name = "Action Error Handling",items = errorItems,de
 fcurve_error = EnumProperty(name = "FCurve Error Handling",items = errorItems,default = "Fix")
 error_text_level = EnumProperty(name = "Error Descriptiveness Level",items = errorTextLevel,default = "Verbose")
 error_log_level = EnumProperty(name = "Filter Errors Output",items = errorDisplayLevel,default = "All")
+export_hidden = BoolProperty(name = "Export Muted F-Curves", default = True, description = "Include Muted F-Curves on Export")
 '''
 
 class FreeHKOutputNode(FreeHKNode):
@@ -45,6 +46,8 @@ class FreeHKOutputNode(FreeHKNode):
             col = layout.column(align=True)
             col.prop(self,"error_text_level")
             col.prop(self,"error_log_level")    
+            col = layout.column(align=True)
+            col.prop(self,"export_hidden")
     def fixEntryCount(self,entryCount,entryIndices,spares,errors):
             entryCount = max(len(spares) + len(entryIndices),max(entryIndices)+1)
             errors.logSolution("Increased Entry Count to %d"%entryCount)

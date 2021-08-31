@@ -377,27 +377,28 @@ class LMTActionParser():
         valid = []
         knownCurves = set()
         for fcurve in fcurves:
-            if len(fcurve.keyframe_points) == 0:
-                self.fcurveErr("F_LMT_EMPTY_FCURVE",fcurve)
-                if self.error_handler.fcurveError.fix or self.error_handler.fcurveError.omit:
-                    self.error_handler.logSolution("Fcurve was omitted from the export process")
-                else:
-                    continue                
-            if (fcurve.data_path,fcurve.array_index) in knownCurves:
-                self.fcurveErr("F_LMT_DUPLICATE_FCURVE",fcurve)
-                if self.error_handler.fcurveError.fix or self.error_handler.fcurveError.omit:
-                    self.error_handler.logSolution("Fcurve was omitted from the export process")
-            else:
-                target,transform = breakPath(fcurve.data_path)
-                if transform not in ["rotation_quaternion","rotation_euler","scale","location"]:                
-                    self.fcurveErr("F_LMT_UNEXPORTABLE_PROPERTY",fcurve)
+            if self.error_handler.exportHidden or not fcurve.mute:
+                if len(fcurve.keyframe_points) == 0:
+                    self.fcurveErr("F_LMT_EMPTY_FCURVE",fcurve)
                     if self.error_handler.fcurveError.fix or self.error_handler.fcurveError.omit:
-                        self.error_handler.logSolution("FCurve was omitted from the export process")
+                        self.error_handler.logSolution("Fcurve was omitted from the export process")
+                    else:
+                        continue                
+                if (fcurve.data_path,fcurve.array_index) in knownCurves:
+                    self.fcurveErr("F_LMT_DUPLICATE_FCURVE",fcurve)
+                    if self.error_handler.fcurveError.fix or self.error_handler.fcurveError.omit:
+                        self.error_handler.logSolution("Fcurve was omitted from the export process")
                 else:
-                    nfcurve = self.validateFCurve(fcurve)
-                    if nfcurve is not None:
-                        knownCurves.add((fcurve.data_path,fcurve.array_index))
-                        valid.append(nfcurve)
+                    target,transform = breakPath(fcurve.data_path)
+                    if transform not in ["rotation_quaternion","rotation_euler","scale","location"]:                
+                        self.fcurveErr("F_LMT_UNEXPORTABLE_PROPERTY",fcurve)
+                        if self.error_handler.fcurveError.fix or self.error_handler.fcurveError.omit:
+                            self.error_handler.logSolution("FCurve was omitted from the export process")
+                    else:
+                        nfcurve = self.validateFCurve(fcurve)
+                        if nfcurve is not None:
+                            knownCurves.add((fcurve.data_path,fcurve.array_index))
+                            valid.append(nfcurve)
         
         return valid
 

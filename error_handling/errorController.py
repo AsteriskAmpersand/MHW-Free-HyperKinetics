@@ -139,6 +139,7 @@ class ErrorHandler():
         self.fcurveError = ErrorLevel(options.fcurve_error)
         self.actionError = ErrorLevel(options.action_error)
         self.graphError = ErrorLevel(options.graph_error)
+        self.exportHidden = options.export_hidden
         self.export_owner = owner
         self.owner = None        
         self.anim_owner = None
