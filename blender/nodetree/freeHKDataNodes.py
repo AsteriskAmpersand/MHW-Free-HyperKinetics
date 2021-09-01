@@ -8,7 +8,7 @@ Created on Thu Jul  1 11:52:09 2021
 import bpy
 from bpy.types import Node
 from .freeHKNodes import FreeHKNode
-from ...struct import TIML,EFX,Lmt,ExtensibleList
+from ...struct import TIML,Lmt,ExtensibleList
 
 try:
     from ...app_license.license import signature

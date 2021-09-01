@@ -9,7 +9,7 @@ import bpy
 from bpy.types import Node
 from bpy.props import BoolProperty,EnumProperty
 from .freeHKNodes import FreeHKNode
-from ...struct import TIML,EFX,Lmt,ExtensibleList
+from ...struct import TIML,Lmt,ExtensibleList
 from ...error_handling.errorLists import errorItems,errorTextLevel,errorDisplayLevel
 from ...error_handling.errorController import ErrorHandler
 

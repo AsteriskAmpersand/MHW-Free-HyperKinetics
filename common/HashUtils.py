@@ -42,13 +42,13 @@ def buildTable():
     datafile = Path(__file__).parent / r"..\struct\TIMLDatatypes.txt"
     timelinefile = Path(__file__).parent / r"..\struct\TIMLTimelineParam.txt"
     table = HashTable()
-    with open(datafile,"r",encoding = 'utf-8') as hashfile:
+    with datafile.open("r",encoding = 'utf-8') as hashfile:
         for line in hashfile:
             line.strip()
             line = line.replace("\n","")
             hexhash,text,dt = line.split(",")
             table.add(text,int(hexhash),int(hexhash)&0x0FFFFFFF)
-    with open(timelinefile,"r",encoding = 'utf-8') as hashfile:
+    with timelinefile.open("r",encoding = 'utf-8') as hashfile:
         for line in hashfile:
             line.strip()
             line = line.replace("\n","")
