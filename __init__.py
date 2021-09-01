@@ -26,7 +26,6 @@ try:
     from .app_license.license import licenseProperty,licenseUI
     licensed = True
 except:
-    raise
     licenseProperty = ''
     licensed = False
     def licenseUI(self,layout):
