@@ -4,7 +4,7 @@ Created on Thu Aug  5 02:52:38 2021
 
 @author: AsteriskAmpersand
 """
-from dataclasses import dataclass
+#from dataclasses import dataclass
 from mathutils import Vector,Euler,Quaternion,Matrix
 from .lmt_exporter_action_calculators import EncodingObject,SynchronicityObject,InversionObject,FreeHKError
 from .blenderOps import breakPath,fetchFreeHKCustom,fetchEncodingType,fetchBoneFunction
@@ -20,11 +20,12 @@ def wrappedMap(skeleton):
 def breakVector(vec):
     return [vec.x,vec.y,vec.z,vec.w if hasattr(vec,"w") else 0]
 
-@dataclass
+#@dataclass
 class ExternalData():
-    frameCount: int = 0
-    rotation: tuple = (0,0,0,1)
-    translation: tuple = (0,0,0,0)
+    def __init__(self,fc=None,rot=None,trans=None):
+        self.frameCount = 0 if fc is None else fc
+        self.rotation = (0,0,0,1) if rot is None else rot
+        self.translation = (0,0,0,0) if trans is None else trans
 
 def getBoneDepth(bone):
     if "__freehk_depth__" in bone:
