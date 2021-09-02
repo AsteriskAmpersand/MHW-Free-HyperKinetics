@@ -94,6 +94,12 @@ class InputEditorGet(bpy.types.Operator):
                 channel.hide = True
         return{'FINISHED'}
 
+def orList(lst):
+    val = 0
+    for v in lst:
+        val |= v
+    return val
+
 class InputEditorSet(bpy.types.Operator):
     bl_idname = "freehk_inputs.set"
     bl_label = "Set Inputs"
@@ -128,7 +134,7 @@ class InputEditorSet(bpy.types.Operator):
             try: kp.remove(k)
             except: pass
         kp.add(len(framelist))
-        last = framelist[-1][1]
+        last = orList([ f[1] for f in framelist])
         for ix,(t,kf) in enumerate(framelist):
             kp[ix].co = t,kf
             kp[ix].back = last
@@ -136,7 +142,7 @@ class InputEditorSet(bpy.types.Operator):
             kp[ix].interpolation = interpolationMapping[5]
 
     def replaceKeyframes(self,kfdic,framelist,update):
-        _,last = framelist[-1]
+        last = orList([ f[1] for f in framelist])
         for t,kf in framelist:
             keyframe = kfdic[t]
             keyframe.co[1] = kf
