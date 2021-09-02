@@ -8,12 +8,12 @@ Created on Wed Jun 30 14:27:30 2021
 import bpy
 from bpy.props import EnumProperty
 from ...ui.HKIcons import pcoll
-from .freeHKNodeOps import (LMTACTION,                            
+from .freeHKNodeOps import (LMTACTION,TIMLACTION,
                             LMTENTRY,EFXENTRY,TIMLENTRY)
 from ..lmt_operators import (TransferTether,TransferTetherSilent,ClearTether,UpdateBoneFunctions,
                             UpdateAnimationNames,CompleteChannels,SynchronizeKeyframes,
                             ResampleFCurve,ResampleSelectedFCurve,GlobalEnableFCurves,
-                            ClearEncoding, MaximizeQuality,PreviewActionsInStrip,
+                            ClearEncoding, MaximizeQuality,PreviewActionsInStrip,RescaleAnimation,
                             CheckActionForExport)
 from ..lmt_tools import lmtTools, lmtDescriptions, lmtIcons
 
@@ -61,14 +61,16 @@ class GoToEntry(bpy.types.Operator):
             bpy.ops.node.view_selected(ctx)
         return {"FINISHED"}
 
-class LMTNodeModifier():
-    def actionFetch(self,context,action_type):
+class NodeModifier():
+    def actionFetch(self,context,action_type = None):
         visited = set()
         actionNodes = []
         for node in context.space_data.node_tree.nodes:
-            if "LMT" in node.bl_idname:
-                actionNodes += fetchTerminalParents(node,lambda x: "LMT" in x.bl_idname,visited)
-        directActions = set((node.input_action for node in actionNodes if node.bl_idname == LMTACTION and node.input_action is not None))
+            if self.typeStr in node.bl_idname:
+                actionNodes += fetchTerminalParents(node,lambda x: self.typeStr in x.bl_idname,visited)
+        directActions = set((node.input_action for node in actionNodes if 
+                             (node.bl_idname == self.typeMatch or (self.typeMatch is None and hasattr(node,"input_action")))
+                             and node.input_action is not None))
         return directActions
     
     @classmethod
@@ -78,9 +80,22 @@ class LMTNodeModifier():
     def execute(self,context):
         self.limit = False
         return super().execute(context)
-        
-def defineDependentClass(parent):
-    class DependentClass(LMTNodeModifier,parent):
+    
+class LMTNodeModifier(NodeModifier):
+    typeStr = "LMT"
+    typeMatch = LMTACTION
+    
+class TIMLNodeModifier(NodeModifier):
+    typeStr = "TIML"
+    typeMatch = TIMLACTION
+    
+class GlobalNodeModifier(NodeModifier):
+    typeStr = ""
+    typeMatch = None    
+    
+    
+def defineDependentClass(parent,cls = LMTNodeModifier):
+    class DependentClass(cls,parent):
         bl_idname = parent.bl_idname + "_node"
         bl_label = parent.bl_label
         bl_options = parent.bl_options
@@ -102,6 +117,17 @@ MaximizeQualityNode  = defineDependentClass(MaximizeQuality)
 CheckActionForExportNode = defineDependentClass(CheckActionForExport)
 StripPreview = defineDependentClass(PreviewActionsInStrip)
 
+class RescaleAnimations(GlobalNodeModifier,RescaleAnimation):
+    parent = RescaleAnimation
+    bl_idname = parent.bl_idname + "_node"
+    bl_label = parent.bl_label
+    bl_options = parent.bl_options
+    bl_description = parent.bl_description.replace("Action","Selected Nodes Action")
+        
+    scale_factor = bpy.props.FloatProperty(name = "Scale", default = 1.0)
+    start_frame = bpy.props.IntProperty(name = "Start Frame", default = 0)
+    end_frame = bpy.props.IntProperty(name = "End Frame", default = -1)
+    discretize = bpy.props.BoolProperty(name = "Discretize Keyframes", default = True)
 
 #layout.operator("freehk.resample_fcurve",icon_value=pcoll["FREEHK"].icon_id, text="Add FreeHK Props")
 #layout.operator("freehk.create_fcurve_action",icon_value=pcoll["FREEHK"].icon_id, text="Add FreeHK Props")
@@ -129,9 +155,13 @@ class ActionToolsNodes(bpy.types.Panel):
                 l.prop(context.scene,"freehk_tether",text = "")#,text = "Transfer Target")
             if tool == "resample_action":
                 l.prop(bpy.context.scene,"freehk_node_resample","")
+        c.operator("freehk.rescale_animation_node",
+                   icon_value=pcoll["FREEHK_RESAMPLE_TOTAL"].icon_id, 
+                   text="Rescale Animation")
         c.operator("freehk.preview_actions_node",
                    icon_value=pcoll["FREEHK_PREVIEW"].icon_id, 
                    text="Actions as NLA Sequence")
+        
 
 class ExportSettings(bpy.types.Panel):
     bl_idname = "freehk.tree_tools_export"
@@ -215,7 +245,8 @@ classes = [
     ClearEncodingNode,
     MaximizeQualityNode,
     CheckActionForExportNode,
-    StripPreview
+    StripPreview,
+    RescaleAnimations
 ]
 
 def importer_menu_ops(self, context):

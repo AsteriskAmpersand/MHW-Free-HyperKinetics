@@ -213,7 +213,59 @@ def updateDopesheet(context):
     try: dopesheet.use_realtime_update = dopesheet.use_realtime_update
     except: pass
     return
-    
+
+
+def discretizeEvaluate(fcurve):
+    timings = {}
+    delete = set()
+    for frame in fcurve.keyframe_points:
+        t = round(frame.co[0])
+        frame.co = (t,fcurve.evaluate(t))
+        if t in timings:
+            delete.add(timings[t])
+        timings[t] = frame
+    for k in reversed(fcurve.keyframe_points):
+        if k in delete:
+            fcurve.keyframe_points.remove(k)
+    fcurve.update()
+
+def rescaleAnimation(action,scale,start,end,discretize,evaluate):
+    roundOperator = round if discretize else lambda x: x
+    if end == -1:
+        end = float("inf")  
+        endDelta = 0
+    else:
+        endDelta = roundOperator((end - start)*scale + start)-end
+    for fcurve in action.fcurves:
+        timings = {}
+        delete = []
+        for frame in sorted([kf for kf in fcurve.keyframe_points],key = lambda x: x.co[0]):
+            t = frame.co[0]
+            if t > start:
+                tn = roundOperator((t - start)*scale + start)
+            elif t > end:
+                tn = t + endDelta
+            else:
+                tn = t
+            if evaluate:
+                frame.co[0] = tn                
+            else:
+                frame.co[0] = tn
+            if tn not in timings:
+                timings[tn] = frame
+            else:
+                delete.append(timings[tn])
+                timings[tn] = frame
+        if discretize:
+            for keyframe in reversed(fcurve.keyframe_points):
+                if keyframe in delete:
+                    fcurve.keyframe_points.remove(keyframe)        
+        fcurve.update()
+        if evaluate:
+            discretizeEvaluate(fcurve)
+    return
+            
+                
 
 def getActions(op,context,filterstr = None):
     if op.limit:

@@ -8,7 +8,7 @@ import bpy
 from .timl_param_utils import timlNameToProp,timlPropToName
 from .blenderOps import (customizeFCurve,foldFCurve,addKeyframe,getActions,fetchFreeHKCustom,
                         updateDopesheet,setEncodingType,setMaxEncoding,fetchEncodingType,
-                        previewStrip)
+                        previewStrip,rescaleAnimation)
 from .tetherOps import (transferTether, updateAnimationNames,updateAnimationBoneFunctions,
                         completeMissingChannels,synchronizeKeyframes,resampleAction,resampleFCurve,
                         getBoneFromPath)
@@ -309,12 +309,47 @@ class PreviewActionsInStrip(bpy.types.Operator):
         if armature or self.tetherless:
             previewStrip(self,armature,target_actions)
         return {'FINISHED'}
+
+class RescaleAnimation(bpy.types.Operator):
+    bl_idname = "freehk.rescale_animation"
+    bl_label = "Rescale Animation"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = "Rescale Animation"
+
+    scale_factor = bpy.props.FloatProperty(name = "Scale", default = 1.0)
+    start_frame = bpy.props.IntProperty(name = "Start Frame", default = 0)
+    end_frame = bpy.props.IntProperty(name = "End Frame", default = -1)
+    discretize = bpy.props.BoolProperty(name = "Discretize Keyframes", default = True)
     
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align = True)
+        col.prop(self, "scale_factor")
+        col.prop(self, "start_frame")
+        col.prop(self, "end_frame")
+        col.prop(self, "discretize")
+        
+    limit = False
+    actionFetch = getActions
+    def execute(self,context):
+        target_actions = sorted(self.actionFetch(context),key = lambda x: x.name)
+        for action in target_actions:
+            typing = action.freehk.starType
+            if typing == "LMT_Action":
+                rescaleAnimation(action,self.scale_factor,self.start_frame,self.end_frame,self.discretize,True)
+            elif typing == "TIML_Action":
+                rescaleAnimation(action,self.scale_factor,self.start_frame,self.end_frame,self.discretize,False)
+            else:
+                rescaleAnimation(action,self.scale_factor,self.start_frame,self.end_frame,False,True)
+        return {'FINISHED'}
         
 classes = [
     CreateFCurve,FoldFCurve,AddKeyframes,TransferTether,TransferTetherSilent,ClearTether,UpdateBoneFunctions,UpdateAnimationNames,
     CompleteChannels,SynchronizeKeyframes,ResampleFCurve,ResampleSelectedFCurve,GlobalEnableFCurves,CheckActionForExport,
-    ResampleSelectedTIMLFCurve, ClearEncoding, MaximizeQuality, PreviewActionsInStrip
+    ResampleSelectedTIMLFCurve, ClearEncoding, MaximizeQuality, PreviewActionsInStrip, RescaleAnimation
 ]
 
 def register():

@@ -163,6 +163,8 @@ def timlMapSettings(context,layout,action):
     row.operator("freehk.resample_timl_fcurve", icon_value=pcoll["FREEHK_RESAMPLE"].icon_id, text="Resample Selected")
     action = getActiveAction(context)
     row.prop(action.freehk,"resampleRate","")
+    col.operator("freehk.rescale_animation", icon_value=pcoll["FREEHK_RESAMPLE"].icon_id, text="Rescale Animation")
+    
     
     #op.action = action
 
@@ -181,6 +183,7 @@ def lmtMapSettings(context,layout,action):
     r = layout.row(align=True)
     r.label("Tethered Armature: ")
     r.label(str(action.freehk.tetherFrame.name) if action.freehk.tetherFrame else "None")
+    layout.operator("freehk.rescale_animation", icon_value=pcoll["FREEHK_RESAMPLE"].icon_id, text="Rescale Animation")
     
 
 class ActionDataTools(bpy.types.Panel):
