@@ -142,6 +142,7 @@ class InputEditorSet(bpy.types.Operator):
             keyframe.co[1] = kf
             if update:
                 keyframe.back = last
+                keyframe.period = 0
 
     def execute(self, context):
         frames,findices = self.compileFrames(context)
