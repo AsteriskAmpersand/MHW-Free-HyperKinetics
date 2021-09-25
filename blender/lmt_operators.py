@@ -332,7 +332,7 @@ class RescaleAnimation(bpy.types.Operator):
         col.prop(self, "end_frame")
         col.prop(self, "discretize")
         
-    limit = False
+    limit = True
     actionFetch = getActions
     def execute(self,context):
         target_actions = sorted(self.actionFetch(context),key = lambda x: x.name)
