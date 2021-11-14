@@ -14,12 +14,6 @@ class FreeHKCustomTree(NodeTree):
     bl_idname = 'FreeHKNodeTree'
     bl_label = 'FreeHK Node Tree'
     bl_icon = 'RENDER_ANIMATION'
-
-
-class FreeHKCustomTreeNode:
-    @classmethod
-    def poll(cls, ntree):
-        return ntree.bl_idname in ['FreeHKNodeTree' ]
     
 
 classes = [

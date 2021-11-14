@@ -74,7 +74,7 @@ class LMTActionNode(Node, FreeHKAnimationNode):
         if not self.input_action:
             return bl
         if self.input_action.freehk.starType != "LMT_Action":
-            self.error_handler.append("A_LMT_INVALID_ACTION_TYPE",self.input_action.name)
+            self.error_handler.append(("A_LMT_INVALID_ACTION_TYPE",self.input_action.name))
             if self.error_handler.actionError.fix:
                 external,internal = LMTActionParser(self.input_action,self.error_handler,bpy.contetxt.scene.freehk_tether).export()
                 self.error_handler.logSolution("Action was treated as an LMT Action and the tether set without updates to the scene's target tether (this might cause issues)")
