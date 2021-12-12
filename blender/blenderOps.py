@@ -241,12 +241,12 @@ def rescaleAnimation(action,scale,start,end,discretize,evaluate):
         delete = []
         for frame in sorted([kf for kf in fcurve.keyframe_points],key = lambda x: x.co[0]):
             t = frame.co[0]
-            if t > start:
-                tn = roundOperator((t - start)*scale + start)
-            elif t > end:
-                tn = t + endDelta
-            else:
+            if t<=start:
                 tn = t
+            elif start < t < end:
+                tn = roundOperator((t - start)*scale + start)
+            elif end <= t:
+                tn = t + endDelta
             if evaluate:
                 frame.co[0] = tn                
             else:
