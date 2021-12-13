@@ -19,8 +19,9 @@ The entirety of Free Hyperkinetics was written by one person AsteriskAmpersand (
 * **LyraVeil** for particular edge cases and issues with previous import only tools.
 
 # A Simple Request
-If you use this tool and find it useful, please credit its use appropiately on mods and link to it so people interested can also give it a try. You can even use the small version of the FreeHK logo if you wish. 
 ![TinyLogo](https://github.com/AsteriskAmpersand/MHW-Free-HyperKinetics/blob/main/icons/TinyLogo.fw.png)
+
+If you use this tool and find it useful, please credit its use appropiately on mods and link to it so people interested can also give it a try. You can even use the small version of the FreeHK logo if you wish. 
 
 Additionaly I'd ask that you avoid posting mods made with this tool on Nexusmods. Given this tool is released with an Open Source License, nothing really stops you, but I just request that you avoid using a site that has taken so many anti-modding attitudes as of late and done so much damage to many small modding communities in the process. 
 
