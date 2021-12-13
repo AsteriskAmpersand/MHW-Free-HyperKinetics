@@ -33,4 +33,4 @@ You can log issues or bugs through the issue tracker on this project page.
 
 Alternatively you can DM me on Discord \*&#7932.
 
-If you wish to contribute my development of furhter modding tools I have a [patreon page](https://www.patreon.com/members?membershipType=active_patron).
+If you wish to contribute directly to me so I can keep making more modding tools for the MH Series I have a [patreon page](https://www.patreon.com/members?membershipType=active_patron).
