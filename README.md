@@ -8,6 +8,9 @@ Free Hyperkinetics is a Blender Extension for editing MHW's LMT, TIML and EFX fi
 
 FreeHK attempts to be a WYISWYG tool. Whenever the exporter has to fill in missing data it will attempt to do so in a way that it matches what's visible in blender. In cases where the metadata conflicts with what's presented it will defer to what's visible. There's tools for ensuring visual and metadata coincide and also to coerce visuals to fall in line with metadata, and it's possible to change exporter settings to modify part of this behaviour.
 
+# Important
+This requires Blender 2.79**c**. You most likely have 2.79**b**. 2.79c never hit stable and has some significant features related to how blender operates, you can get it from [here](https://download.blender.org/release/Blender2.79/latest/) 2.79c is retrocompatible so you can just outright replace your existing 2.79b install.
+
 # Background and Credits
 
 The entirety of Free Hyperkinetics was written by one person AsteriskAmpersand (me). It was a year long ordeal of wrestling Blender into doing something sane with the animation format of MHW. During this period I also had to research a lot of missing parts and pieces of the animation format and additionally provide actual editing and transfer support for animations. 
