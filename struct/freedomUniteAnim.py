@@ -136,7 +136,7 @@ def transformFrameValue(ttype, ktype):
         [lambda x: x/15, lambda x: x, lambda x: x/15],  # Scale
 
         [lambda x: round(x/(4096*2/capPi),6), 
-         lambda x: x*capPi,
+         lambda x: x*capPi/2,
          lambda x: round(x/(4096*2/capPi),6)],  # Rot
 
         [lambda x: x/15, lambda x: x, lambda x: x/15],  # Trans
