@@ -71,7 +71,7 @@ class FreeHKAddonPreferences(AddonPreferences):
     export_hidden = BoolProperty(name = "Export Muted F-Curves", default = True, description = "Include Muted F-Curves on Export")
     output_log = BoolProperty(name = "Log Export Info",default = True,description = "Write Export Process Information to a Log File")
     output_log_folder = StringProperty(name = "Export Output Log Directory",subtype = 'DIR_PATH')
-    enable_wrong = BoolProperty(name = "Enable Failed Features", default = False, description = "Enables Improperly Implemented Features for Debug Reasons")
+    enable_wrong = BoolProperty(name = "Enable Freedom Unite Features", default = False, description = "Enables Freedom Unite Animation Tools")
     if licensed:exec(licenseProperty)        
     def draw(self, context):
         layout = self.layout
