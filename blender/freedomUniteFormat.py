@@ -4,7 +4,7 @@ Created on Sat Sep 19 18:56:59 2020
 
 @author: AsteriskAmpersand
 """
-from ..struct.frontierAnim import (BlockHeader, AnimDataUnkn, KeyframeShort,
+from ..struct.freedomUniteAnim import (BlockHeader, AnimDataUnkn, KeyframeShort,
                                  KeyframeShortExtended, KeyframeFloat)
 from ..common import Constants as ct
 from ..common import Interpolation
@@ -23,52 +23,52 @@ def ShowMessageBox(message = "", title = "Message Box", icon = 'INFO'):
 class UnknownTypeError(Exception):
     pass
 
-class FrontierBlock():
+class FreedomUniteBlock():
     def __init__(self,header,data):
         self.header = header
         self.data = data
     def serialize(self):
         return self.header.serialize()+b''.join(map(lambda x: x.serialize(),self.data))
 
-class FrontierTransform(FrontierBlock):
+class FreedomUniteTransform(FreedomUniteBlock):
     pass
 
-class FrontierBone(FrontierBlock):
+class FreedomUniteBone(FreedomUniteBlock):
     pass
 
-dummyBone = FrontierBone(BlockHeader().construct({"blockType":0x80000000,"blockCount":0,"blockSize":12}),[])
+dummyBone = FreedomUniteBone(BlockHeader().construct({"blockType":0x80000000,"blockCount":0,"blockSize":12}),[])
 
-class FrontierFormat():
-    def __init__(self,frontierSignatureRot,frontierSignaturePos,frontierSignatureScl, correction = False):
+class FreedomUniteFormat():
+    def __init__(self,freedomUniteSignatureRot,freedomUniteSignaturePos,freedomUniteSignatureScl, correction = False):
         self.playerBodyCorrection = correction
         
-        self.FrontierFrameSignatureRot = {0:0x80120000,1:0x80220000,2:80130000}[frontierSignatureRot]
-        self.FrontierFrameSignaturePos = {0:0x80120000,1:0x80220000,2:80130000}[frontierSignaturePos]
-        self.FrontierFrameSignatureScl = {0:0x80120000,1:0x80220000,2:80130000}[frontierSignatureScl]
-        self.FrontierFrameSignature = {ct.ROT_E:self.FrontierFrameSignatureRot,
-                                       ct.POS:self.FrontierFrameSignaturePos,
-                                       ct.SCL:self.FrontierFrameSignatureScl}
+        self.FreedomUniteFrameSignatureRot = {0:0x80120000,1:0x80220000,2:80130000}[freedomUniteSignatureRot]
+        self.FreedomUniteFrameSignaturePos = {0:0x80120000,1:0x80220000,2:80130000}[freedomUniteSignaturePos]
+        self.FreedomUniteFrameSignatureScl = {0:0x80120000,1:0x80220000,2:80130000}[freedomUniteSignatureScl]
+        self.FreedomUniteFrameSignature = {ct.ROT_E:self.FreedomUniteFrameSignatureRot,
+                                       ct.POS:self.FreedomUniteFrameSignaturePos,
+                                       ct.SCL:self.FreedomUniteFrameSignatureScl}
         
-        self.FrontierFrameTypeRot = transformStruct[frontierSignatureRot]
-        self.FrontierFrameTypePos = transformStruct[frontierSignaturePos]
-        self.FrontierFrameTypeScl = transformStruct[frontierSignatureScl]
-        self.FrontierFrameType = {ct.ROT_E:self.FrontierFrameTypeRot,
-                                    ct.POS:self.FrontierFrameTypePos,
-                                    ct.SCL:self.FrontierFrameTypeScl}
+        self.FreedomUniteFrameTypeRot = transformStruct[freedomUniteSignatureRot]
+        self.FreedomUniteFrameTypePos = transformStruct[freedomUniteSignaturePos]
+        self.FreedomUniteFrameTypeScl = transformStruct[freedomUniteSignatureScl]
+        self.FreedomUniteFrameType = {ct.ROT_E:self.FreedomUniteFrameTypeRot,
+                                    ct.POS:self.FreedomUniteFrameTypePos,
+                                    ct.SCL:self.FreedomUniteFrameTypeScl}
                 
-        self.FrontierRotCast = {ct.ROT_E:int,ct.POS:float,ct.SCL:int}[frontierSignatureRot]
-        self.FrontierPosCast = {ct.ROT_E:int,ct.POS:float,ct.SCL:int}[frontierSignaturePos]
-        self.FrontierSclCast = {ct.ROT_E:int,ct.POS:float,ct.SCL:int}[frontierSignatureScl] 
-        self.FrontierCast = {ct.ROT_E:self.FrontierRotCast,
-                                ct.POS:self.FrontierPosCast,
-                                ct.SCL:self.FrontierSclCast}
+        self.FreedomUniteRotCast = {ct.ROT_E:int,ct.POS:float,ct.SCL:int}[freedomUniteSignatureRot]
+        self.FreedomUnitePosCast = {ct.ROT_E:int,ct.POS:float,ct.SCL:int}[freedomUniteSignaturePos]
+        self.FreedomUniteSclCast = {ct.ROT_E:int,ct.POS:float,ct.SCL:int}[freedomUniteSignatureScl] 
+        self.FreedomUniteCast = {ct.ROT_E:self.FreedomUniteRotCast,
+                                ct.POS:self.FreedomUnitePosCast,
+                                ct.SCL:self.FreedomUniteSclCast}
         
-        self.FrontierRotValueCast = {0:lambda x:round(x*4096*2/pi),
+        self.FreedomUniteRotValueCast = {0:lambda x:round(x*4096*2/pi),
                                   1:lambda x:x/pi,
-                                  2:lambda x:round(x*4096*2/pi)}[frontierSignatureRot]
-        self.FrontierTransValueCast = {0:lambda x:round(x*15.22),
+                                  2:lambda x:round(x*4096*2/pi)}[freedomUniteSignatureRot]
+        self.FreedomUniteTransValueCast = {0:lambda x:round(x*15.22),
                                   1:lambda x:x,
-                                  2:lambda x:round(x*15.22)}[frontierSignatureRot]
+                                  2:lambda x:round(x*15.22)}[freedomUniteSignatureRot]
     def interpolate(self,lframe,frame,rframe):
         if lframe is None:
             lInterpol = 0
@@ -80,36 +80,36 @@ class FrontierFormat():
             rInterpol = Interpolation.interpolation(frame,rframe,1/3)
         return lInterpol, rInterpol
     
-    def FrontierFrame(self,transform,lframe,frame,rframe):
+    def FreedomUniteFrame(self,transform,lframe,frame,rframe):
         lInterpol, rInterpol = self.interpolate(lframe,frame,rframe)
         if transform.transform == ct.ROT_E:
             if lframe is not None: lInterpol = round((lInterpol)*180/pi)
             if rframe is not None: rInterpol = round((rInterpol)*180/pi)
-            value = self.FrontierRotValueCast(frame.value)
+            value = self.FreedomUniteRotValueCast(frame.value)
         elif transform.transform == ct.POS:
             #if transform.dimension == 2:
             if lframe is not None: lInterpol -= lframe.value
             if rframe is not None: rInterpol -= frame.value
-            value = self.FrontierTransValueCast(frame.value)
+            value = self.FreedomUniteTransValueCast(frame.value)
             if transform.dimension == 1:
                 #lInterpol -= 110
                 #rInterpol -= 110
-                value = self.FrontierTransValueCast(frame.value+110*self.bodyCorrection)
+                value = self.FreedomUniteTransValueCast(frame.value+110*self.bodyCorrection)
         elif transform.transform == ct.SCL:
             if lframe is not None: lInterpol -= lframe.value
             if rframe is not None:rInterpol -= frame.value      
             value = frame.value
-        return self.FrontierFrameType[transform.transform]().construct({
-                                "keyvalue": self.FrontierCast[transform.transform](value),
-                                "frameIndex":self.FrontierCast[transform.transform](frame.index),
-                                "lInterpol":self.FrontierCast[transform.transform](lInterpol),
-                                "rInterpol":self.FrontierCast[transform.transform](rInterpol)
+        return self.FreedomUniteFrameType[transform.transform]().construct({
+                                "keyvalue": self.FreedomUniteCast[transform.transform](value),
+                                "frameIndex":self.FreedomUniteCast[transform.transform](frame.index),
+                                "lInterpol":self.FreedomUniteCast[transform.transform](lInterpol),
+                                "rInterpol":self.FreedomUniteCast[transform.transform](rInterpol)
                                 })
-    def createFrontierTransform(self,transform):        
+    def createFreedomUniteTransform(self,transform):        
         signature = transformStartHash[transform.transform]
-        signature = (signature << transform.dimension) | self.FrontierFrameSignature[transform.transform]
+        signature = (signature << transform.dimension) | self.FreedomUniteFrameSignature[transform.transform]
         count = len(transform.keyframes)
-        frames = [self.FrontierFrame(transform,lframe,frame,rframe) 
+        frames = [self.FreedomUniteFrame(transform,lframe,frame,rframe) 
                   for lframe,frame,rframe in zip([None]+list(transform.keyframes[:-1]),
                                                  transform.keyframes,
                                                  list(transform.keyframes[1:]+[None]))]
@@ -117,14 +117,14 @@ class FrontierFormat():
         header = BlockHeader()
         size = len(header) + len(data)
         header.construct({"blockType":signature,"blockCount":count,"blockSize":size})
-        return FrontierTransform(header,frames)
-    def createFrontierBone(self,obj):
+        return FreedomUniteTransform(header,frames)
+    def createFreedomUniteBone(self,obj):
         transforms = []
         for transform in obj:
             if transform.transform not in transformStartHash:
-                raise UnknownTypeError("Transform Type %s in %s Not Compatible with Frontier"%
+                raise UnknownTypeError("Transform Type %s in %s Not Compatible with FreedomUnite"%
                                        (ct.inverse_transform[transform.transform]),obj.name)
-            transforms.append(self.createFrontierTransform(transform))
+            transforms.append(self.createFreedomUniteTransform(transform))
         count = len(transforms)
         data = b''.join(map(lambda x:x.serialize(),transforms))        
         r = 0x80000000
@@ -133,7 +133,7 @@ class FrontierFormat():
         header = BlockHeader()
         size = len(data)+len(header)
         header.construct({"blockType":ortype,"blockCount":count,"blockSize":size})
-        return FrontierBone(header,transforms)
+        return FreedomUniteBone(header,transforms)
     def serializeAnimation(self,animation,skeletonSize,startingBone):
         result = b''        
         before = []
@@ -147,12 +147,12 @@ class FrontierFormat():
                 if ix < startingBone:
                     for i in range(currentLow,ix):
                         before.append(dummyBone)
-                    before.append(self.createFrontierBone(obj))
+                    before.append(self.createFreedomUniteBone(obj))
                     currentLow = ix+1
                 else:
                     for i in range(current,ix):
                         after.append(dummyBone)
-                    after.append(self.createFrontierBone(obj))
+                    after.append(self.createFreedomUniteBone(obj))
                     current = ix+1
         if before:
             for i in range(current,skeletonSize):

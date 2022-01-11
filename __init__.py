@@ -11,6 +11,7 @@ import addon_utils
 from bpy.types import AddonPreferences
 from bpy.props import StringProperty, IntProperty, BoolProperty, EnumProperty
 
+from .struct import freedomUniteAnim
 from .blender.nodetree import freeHKTree,freeHKSockets,freeHKNodes,freeHKNodeTools
 from .blender.nodetree import freeHKActionNodes,freeHKDataNodes,freeHKFileNodes
 from .blender import timl_controller
@@ -20,6 +21,8 @@ from .blender import binary_tools
 from .blender import binary_inputs
 from .operators import timl_io,timl_ops,lmt_io,export_ops
 from .operators import lmt_rig_ops
+#from .operators import freedomUnite_io
+
 from .error_handling.errorLists import errorItems,errorTextLevel,errorDisplayLevel
 
 try:
@@ -68,6 +71,7 @@ class FreeHKAddonPreferences(AddonPreferences):
     export_hidden = BoolProperty(name = "Export Muted F-Curves", default = True, description = "Include Muted F-Curves on Export")
     output_log = BoolProperty(name = "Log Export Info",default = True,description = "Write Export Process Information to a Log File")
     output_log_folder = StringProperty(name = "Export Output Log Directory",subtype = 'DIR_PATH')
+    enable_wrong = BoolProperty(name = "Enable Failed Features", default = False, description = "Enables Improperly Implemented Features for Debug Reasons")
     if licensed:exec(licenseProperty)        
     def draw(self, context):
         layout = self.layout
@@ -89,15 +93,18 @@ class FreeHKAddonPreferences(AddonPreferences):
         col.prop(self,"error_log_level")
         col = layout.column(align=True)
         col.prop(self,"export_hidden")
+        col.prop(self,"enable_wrong")
 
 modules = [timl_controller,lmt_tools,
            freeHKTree,freeHKSockets,freeHKNodes,freeHKNodeTools,
            freeHKActionNodes,freeHKDataNodes,freeHKFileNodes,
            timl_io,timl_ops,lmt_io,lmt_operators,export_ops,
-           lmt_rig_ops,binary_tools,binary_inputs
+           lmt_rig_ops,binary_tools,binary_inputs,freedomUniteAnim,
+           #freedomUnite_io
            ]
 classes = []
-exportFunctions = [] 
+importFunctions = []
+exportFunctions = []
 
 
 def register():

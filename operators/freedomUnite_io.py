@@ -19,7 +19,7 @@ from bpy.types import Operator
 from pathlib import Path
 
 from ..blender.exchangeFormat import ExchangeFormat
-from ..blender.frontierFormat import FrontierFormat
+from ..blender.freedomUniteFormat import FreedomUniteFormat
 from ..blender.clearQuaternions import fixQuaternions 
 
 def skeletonCandidates(obj,context):
@@ -29,9 +29,9 @@ def skeletonCandidates(obj,context):
 def skeletonCondition(obj,ob):
     return ob.type == "ARMATURE" or (ob.type == "EMPTY" and ob.parent is None)
     
-class ExportFrontierAnimation(Operator, ExportHelper):
-    bl_idname = "custom_export.export_mhf_anim"
-    bl_label = "Save MHF Hari Animation Timeline File (.fhat)"
+class ExportFreedomUniteAnimation(Operator, ExportHelper):
+    bl_idname = "custom_export.export_mhfu_anim"
+    bl_label = "Save MHFU Hari Animation Timeline File (.fhat)"
     bl_options = {'REGISTER', 'PRESET', 'UNDO'}
  
     filename_ext = ".fhat"
@@ -75,7 +75,7 @@ class ExportFrontierAnimation(Operator, ExportHelper):
             default = 0)
     ack = StringProperty(
             name = "Acknowledge",
-            description = "Acknowledge 'Frontier is trash that should remain dead' to export"
+            description = "Acknowledge 'FreedomUnite is trash that should remain dead' to export"
         )
     fix = BoolProperty(
             name = "Rectify Quaternions",
@@ -93,8 +93,8 @@ class ExportFrontierAnimation(Operator, ExportHelper):
             default = False
         )
     def execute(self,context):
-        if self.ack != 'Frontier is trash that should remain dead':
-            raise ValueError("You have not acknowledged that 'Frontier is trash that should remains dead'\nYou instead wrote '%s'"%self.ack)
+        if self.ack != 'FreedomUnite is trash that should remain dead':
+            raise ValueError("You have not acknowledged that 'FreedomUnite is trash that should remains dead'\nYou instead wrote '%s'"%self.ack)
         if self.fix:
             fixQuaternions()
         exf = ExchangeFormat()
@@ -103,7 +103,7 @@ class ExportFrontierAnimation(Operator, ExportHelper):
             exf.parseSkeleton(skeleton,use_name = self.name)
         elif skeleton.type == "EMPTY":
             exf.parseEmptySkeleton(skeleton,use_name = self.name)
-        ffx = FrontierFormat(int(self.typingR),int(self.typingT),int(self.typingS),self.body)
+        ffx = FreedomUniteFormat(int(self.typingR),int(self.typingT),int(self.typingS),self.body)
         anim,offsets = ffx.serializeExchangeFormat(exf,ffx.getSkeletonSize(skeleton),self.startingBone)
         with open(self.filepath,"wb") as outf:
             outf.write(anim)
@@ -111,5 +111,5 @@ class ExportFrontierAnimation(Operator, ExportHelper):
             outf.write(offsets)
         return {"FINISHED"}
     
-def menu_func_export_mhf(self, context):
-    self.layout.operator(ExportFrontierAnimation.bl_idname, text="MHF HAT (.fhat)")
+def menu_func_export_mhfu(self, context):
+    self.layout.operator(ExportFreedomUniteAnimation.bl_idname, text="MHFU HAT (.fhat)")
