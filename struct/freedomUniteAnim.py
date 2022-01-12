@@ -225,15 +225,10 @@ def getOffsets(counts):
     return result
 
 class FreedomUniteAnim():
-    def __init__(self, skeleton, splitPoint):
+    def __init__(self, skeleton, split):
         self.skeleton = skeleton
-        self.splitPoint = splitPoint
-        self.split = splitPoint != -1
+        self.split = split
         return
-        if skeleton is None:
-            self.boneIterator = None
-        else:
-            self.boneIterator = BoneIterator(skeleton, splitPoint)
 
     def mergeAnimations(self,key,animationSet):
         mergedAnim = []
@@ -271,11 +266,11 @@ class FreedomUniteAnim():
         stochasticBoneCounts = [max([len(anim) 
                                 for anim in pblock.animations.values()],default = 0) 
                                    for pblock in anim.headers]
-        boneCount = stochasticBoneCounts[::2]
-        cutTail = stochasticBoneCounts[-1]
+        boneCount = stochasticBoneCounts[::2] if not self.split else stochasticBoneCounts[:2]
+        #cutTail = stochasticBoneCounts[-1]
         boneOffsets = getOffsets(boneCount)
         matched = list(zip(list(anim.headers)[::2],list(anim.headers)[1::2]))
-        reordered = list(map(list,zip(*matched)))
+        reordered = list(map(list,zip(*matched) if not self.split else matched))
         keysets = list(map(massedUnion,map(keysToSets ,reordered)))
         mergedAnims = {}
         for setting,(keyset,animset) in enumerate(zip(keysets,reordered)):
@@ -292,7 +287,7 @@ class FreedomUniteAnim():
             mergedAnims[setting] = anims
         self.animations = mergedAnims
         return
-
+    
     def marshallAnimData(self, stream):
         animData = AnimHeader().marshall(stream)
         bones = []
@@ -376,15 +371,7 @@ if blender:
         filename_ext = ".fua"
         filter_glob = StringProperty(
             default="*.fua", options={'HIDDEN'}, maxlen=255)
-        split = BoolProperty(name="Split Skeleton", default=False)
-        splitPoint = IntProperty(name="Split Point", default=-1)
-
-        def draw(self, context):
-            layout = self.layout
-            col = layout.column()
-            col.prop(self, "split")
-            if self.split:
-                col.prop(self, "splitPoint")
+        split = BoolProperty(name="Player Animation", default=False)
 
         def execute(self, context):
             skeleton = getSkeleton(context)
@@ -395,7 +382,7 @@ if blender:
                 return {'CANCELED'}
             with open(self.properties.filepath, "rb") as inf:
                 fuanim = FreedomUniteAnim(
-                    skeleton, self.splitPoint if self.split else -1)
+                    skeleton, self.split)
                 fuanim.marshall(inf)
             self.loadAnimations(context, fuanim)
             return {'FINISHED'}
@@ -410,13 +397,15 @@ if blender:
             typeName = ["scale", "rotation_euler", "location"][typing]
             return 'pose.bones["%s"].%s' % (boneName, typeName)
 
-        def createChannel(self, action, boneName, transform):
+        def createChannel(self, action, boneData, transform):
+            boneName = boneData.boneName
             dataPath = self.createDataPath(boneName, transform.type[0])
             keyframeCount = len(transform.keyframes)
             f = action.fcurves.new(data_path=dataPath, index=transform.type[1])
             f.keyframe_points.add(keyframeCount)
+            #playerBodyCorrection = self.split * (transform.type[1] == 2) * 110 * (boneData.boneIndex == 2)
             for bkeyframe, fkeyframe in zip(f.keyframe_points, transform.keyframes):
-                bkeyframe.co = fkeyframe.frameIndex, fkeyframe.keyvalue
+                bkeyframe.co = fkeyframe.frameIndex, fkeyframe.keyvalue# - playerBodyCorrection
             f.update()
             return
 
@@ -430,7 +419,7 @@ if blender:
                         for transform in bone.transforms:
                             #print("       ",transform)
                             self.createChannel(
-                                action, bone.boneName, transform)
+                                action, bone, transform)
 
     classes = [
         ImportFUAnim, CycleBoneNames,  # ExportFreedomUniteAnimation
@@ -468,7 +457,7 @@ if __name__ in "__main__":
     
     bones = ["Bone%03d" % b for b in range(60)]
     anim = FreedomUniteAnim(bones, -1)
-    with open(r"D:\Downloads\models\emmodel\em01\003_data.fua", "rb") as inf:
+    with open(r"D:\Downloads\models\edit\editpl_f\plcom_tbl.fua", "rb") as inf:
         anim.marshall(inf)
     print("Highest Bone Index in entire animation")
     print([max([len(anim) for anim in pblock.animations.values()],default = 0) for pblock in anim.headers])
@@ -485,11 +474,7 @@ if __name__ in "__main__":
     reordered = list(map(list,zip(*matched)))
     keysets = list(map(keysToSets ,reordered))
     matchCount = list(map(len,list(map(massedIntersection,keysets))))
-    print(
-        
-        
-        
-        )
+    print(matchCount)
     #.pblock.animations.keys()
     
     

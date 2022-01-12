@@ -73,10 +73,6 @@ class ExportFreedomUniteAnimation(Operator, ExportHelper):
             name = "Starting Bone Index",
             description = "Index on which the last animation left.",
             default = 0)
-    ack = StringProperty(
-            name = "Acknowledge",
-            description = "Acknowledge 'FreedomUnite is trash that should remain dead' to export"
-        )
     fix = BoolProperty(
             name = "Rectify Quaternions",
             description = "Rectify Quaternion into Euler Rotations",
@@ -93,8 +89,6 @@ class ExportFreedomUniteAnimation(Operator, ExportHelper):
             default = False
         )
     def execute(self,context):
-        if self.ack != 'FreedomUnite is trash that should remain dead':
-            raise ValueError("You have not acknowledged that 'FreedomUnite is trash that should remains dead'\nYou instead wrote '%s'"%self.ack)
         if self.fix:
             fixQuaternions()
         exf = ExchangeFormat()
