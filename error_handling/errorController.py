@@ -201,7 +201,7 @@ class ErrorHandler():
     def writeLog(self,exportpath,logpath):
         cannonicalPath = os.path.realpath(bpy.path.abspath(logpath))
         exportpath = os.path.realpath(bpy.path.abspath(exportpath))
-        outpath = cannonicalPath+'\\'+Path(exportpath).stem+".txt"
+        outpath = cannonicalPath+'/'+Path(exportpath).stem+".txt"
         try:
             with open(outpath,"w") as outf:
                 output = lambda x: outf.write(str(x)+'\n')

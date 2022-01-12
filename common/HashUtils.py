@@ -39,8 +39,8 @@ class HashTable():
                 return results,True,False      
 
 def buildTable():
-    datafile = Path(__file__).parent / r"..\struct\TIMLDatatypes.txt"
-    timelinefile = Path(__file__).parent / r"..\struct\TIMLTimelineParam.txt"
+    datafile = Path(__file__).parent / r"../struct/TIMLDatatypes.txt"
+    timelinefile = Path(__file__).parent / r"../struct/TIMLTimelineParam.txt"
     table = HashTable()
     with datafile.open("r",encoding = 'utf-8') as hashfile:
         for line in hashfile:
