@@ -609,7 +609,7 @@ class RigAnimationTransfer(bpy.types.Operator):
         if self.cat:
             functionalizeArmature(source)
             applyTransformSkeleton(source,context)  
-            muteGlobal(source.animation_data.action)
+            muteGlobal(source.animation_data.action.fcurves)
         elif self.byname:
             self.transferFunctions(target,source)
         copy = self.cloneArmature(source,copyAction = False)
