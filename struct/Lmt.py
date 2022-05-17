@@ -258,6 +258,7 @@ class LMT():
         Padding(data,16)
         for ix,offset in enumerate(self.Offsets.offsets):    
             if offset:
+                data.seek(offset)
                 action = LMTActionHeader()
                 self.ActionHeaders.append(action.marshall(data))
                 action.id = ix
