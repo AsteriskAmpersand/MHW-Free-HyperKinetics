@@ -30,6 +30,10 @@ Additionaly I'd ask that you avoid posting mods made with this tool on Nexusmods
 
 Furthermore, please do not use this to produce in-game pornography. There's already thousands of tools and platforms for that sort of thing, and the last thing I want is to have my tool or my game of modding choice to further be associated and stereotyped with that sort of content. Again, I can't stop you, it's an open source license, but I am asking nicely.
 
+# Usage and Documentation
+
+Tutorials and explanations of the systems involved can be found on the [modding wiki's relevant article](https://github.com/Ezekial711/MonsterHunterWorldModding/wiki/Free-Hyperkinetics-and-Independent-TIML-Works-Overview).
+
 # Contributing
 You can contribute to this repository through a well documented or founded PR.
 You can log issues or bugs through the issue tracker on this project page.
