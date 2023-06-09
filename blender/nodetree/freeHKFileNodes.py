@@ -39,13 +39,13 @@ class FreeHKOutputNode(FreeHKNode):
         layout.prop(self, "entryCount")
         layout.prop(self, "customizeExport")
         if self.customizeExport:
-            col = layout.column(align=True)        
+            col = layout.column(align=True)
             col.prop(self,"graph_error")
             col.prop(self,"action_error")
             col.prop(self,"fcurve_error")
             col = layout.column(align=True)
             col.prop(self,"error_text_level")
-            col.prop(self,"error_log_level")    
+            col.prop(self,"error_log_level")
             col = layout.column(align=True)
             col.prop(self,"export_hidden")
     def fixEntryCount(self,entryCount,entryIndices,spares,errors):
@@ -71,7 +71,7 @@ class FreeHKOutputNode(FreeHKNode):
         elif entryCount < len(spares) + len(entryIndices):
             errors.append(("G_LOW_ENTRY_COUNT",
                            self.name,maxid,
-                           entryCount))   
+                           entryCount))
             return True
         return False
     def handleEntryCount(self,entryIndices,spares,errors):
@@ -104,9 +104,9 @@ class FreeHKOutputNode(FreeHKNode):
             if self.entryCount == -1:
                 entryCount = max(len(spares) + len(entryIndices),max(entryIndices)+1)
             else:
-                entryCount = self.handleEntryCount(entryIndices,spares,errors)                           
+                entryCount = self.handleEntryCount(entryIndices,spares,errors)
         else:
-            entryCount = max(len(spares) + len(entryIndices),max(entryIndices)+1)      
+            entryCount = max(len(spares) + len(entryIndices),max(entryIndices)+1)
         return entryCount,entryIndices,spares
     def export(self,error_handler = None):
         cache = self.cacheCheck()
@@ -136,10 +136,10 @@ class FreeHKOutputNode(FreeHKNode):
                 substructure.append(entry.export())
             else:
                 substructure.append(None)
-        structure = structure.extend(substructure)    
+        structure = structure.extend(substructure)
         self.cacheAdd(structure)
         return structure
-        
+
 
 class LMTFileNode(Node, FreeHKOutputNode):
     '''LMT Output Node'''
@@ -157,7 +157,7 @@ class LMTFileNode(Node, FreeHKOutputNode):
     entryCount = bpy.props.IntProperty(name="Entry Count", default = -1)
     inject = bpy.props.BoolProperty(name="Inject",description="Inject into a file instead of exporting",default = False)
     exec(outputProps)
-    
+
     inputType = "FreeHKAnimationEntrySocket"
     inputName = "LMT Entry"
     inputStr = "LMT_Entry"
@@ -186,7 +186,7 @@ class TIMLFileNode(Node, FreeHKOutputNode):
     exec(outputProps)
 
     def basicStructure(self):
-        return TIML.TIML()    
+        return TIML.TIML()
 
     inputType = "FreeHKTimlEntrySocket"
     inputName = "TIML Entry"
@@ -200,13 +200,13 @@ class EFXFileNode(Node, FreeHKOutputNode):
     bl_label = "EFX Output Node"
     bl_icon = 'GREASEPENCIL'
     exec(outputProps)
-    
+
     filepath = bpy.props.StringProperty(
         name = "Path",
         description = "Path to the file to export",
         default = "",
         subtype = 'FILE_PATH'
-        )    
+        )
     inject = bpy.props.BoolProperty(name="Inject",description="Inject into a file instead of exporting",default = False)
     inputType = "FreeHKEFXEntrySocket"
     inputName = "EFX Entry"
@@ -214,7 +214,7 @@ class EFXFileNode(Node, FreeHKOutputNode):
     addon_key = __package__.split('.')[0]
     def draw_buttons(self, context, layout):
         layout.prop(self, "filepath")
-        layout.prop(self, "inject")        
+        layout.prop(self, "inject")
     def calculateEntryCount(self):
         with open(self.filepath,"rb") as inf:
             file = inf.read()
@@ -222,13 +222,13 @@ class EFXFileNode(Node, FreeHKOutputNode):
         return len(timlOffsets)
     def basicStructure(self):
         addon = bpy.context.user_preferences.addons[self.addon_key]
-        retrograde = addon.preferences.preferences.dumb_efx_timl        
+        retrograde = addon.preferences.dumb_efx_timl
         with open(self.filepath,"rb") as inf:
             if retrograde:
-                return TIML.Legacy_TIML_EFX().marshall(inf)                
+                return TIML.Legacy_TIML_EFX().marshall(inf)
             else:
                 return TIML.TIML_EFX().marshall(inf)
-    
+
 class JSONFileNode(Node,FreeHKOutputNode):
     '''JSON Output Node'''
     bl_idname = 'JSONFileNode'
@@ -254,7 +254,7 @@ class JSONFileNode(Node,FreeHKOutputNode):
         return self
     def update(self):
         linkName = list(self.inputs.keys())[0]
-        if self.inputs[linkName].links:            
+        if self.inputs[linkName].links:
             self.inputs[linkName].name = self.inputs[linkName].links[0].from_socket.name
 
 classes = [
