@@ -17,20 +17,20 @@ class EncodingObject():
         for encoding in encodings:
             if encoding not in [1,2,3,4,5,6,7, 11,12,13,14,15]:
                 encodings.remove(encoding)
-                self.reportEncodingType("F_LMT_INVALID_ENCODING_TYPE")
+                self.reportEncodingType("F_LMT_INVALID_ENCODING_TYPE",encoding)
                 if self.error_handler.fcurveError.fix:
-                    self.error_handler.logSolution("Transform %s Encoding set to autodetection"%axislessDataPath(self.datapath))
+                    self.error_handler.logSolution("Transform %s Encoding set to autodetection"%axislessDataPath(self.data_path))
                 elif self.error_handler.fcurveError.omit:
-                    self.error_handler.logSolution("Transform %s omitted from export process"%axislessDataPath(self.datapath))
+                    self.error_handler.logSolution("Transform %s omitted from export process"%axislessDataPath(self.data_path))
                     return False
                 else:
                     return False
         if len(encodings) >1:
             self.report("F_LMT_CONFLICTING_ENCODING_TYPE")
             if self.error_handler.fcurveError.fix:
-                self.error_handler.logSolution("Transform %s Encoding set to autodetection"%axislessDataPath(self.datapath))
+                self.error_handler.logSolution("Transform %s Encoding set to autodetection"%axislessDataPath(self.data_path))
             elif self.error_handler.fcurveError.omit:
-                self.error_handler.logSolution("Transform %s omitted from export process"%axislessDataPath(self.datapath))
+                self.error_handler.logSolution("Transform %s omitted from export process"%axislessDataPath(self.data_path))
                 return False
             else:
                 return False
@@ -38,13 +38,15 @@ class EncodingObject():
     def reportEncoding(self,errtype,encoding):
         self.reportEncodingType(errtype,encoding)
         if self.error_handler.fcurveError.fix:
-                self.error_handler.logSolution("Transform %s Encoding set to autodetection"%axislessDataPath(self.datapath))
+                self.error_handler.logSolution("Transform %s Encoding set to autodetection"%axislessDataPath(self.data_path))
         elif self.error_handler.fcurveError.omit:
-            self.error_handler.logSolution("Transform %s omitted from export process"%axislessDataPath(self.datapath))
+            self.error_handler.logSolution("Transform %s omitted from export process"%axislessDataPath(self.data_path))
             return False
         else:
             return False
         return True
+    def reportEncodingType(self,error,encoding):
+        self.report(error,encoding)
     def reportNonReference(self,encoding):
         return self.reportEncoding("F_LMT_INVALID_ENCODING_NONKEY",encoding)
     def reportReference(self,encoding):

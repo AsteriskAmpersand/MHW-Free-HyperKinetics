@@ -8,7 +8,7 @@ import bpy
 import os
 from pathlib import Path
 from .errorLists import (error_types,error_map,
-                            GRAPH,ACTION,FCURVE,
+                            GRAPH,ACTION,FCURVE,FILE,
                             errorTextLevel,errorDisplayLevel)
 
 def ShowMessageBox(message = "", title = "Message Box", icon = 'INFO'):
@@ -36,7 +36,8 @@ class ErrorEntry():
         self.fix = "" 
         self.level = {GRAPH:lvl.graphError.level,
                       ACTION:lvl.actionError.level,
-                      FCURVE:lvl.fcurveError.level}[self.type]
+                      FCURVE:lvl.fcurveError.level,
+                      FILE:lvl.graphError.level}[self.type]
         self.output = print
     def unsolve(self):
         self.level = 0
@@ -162,13 +163,14 @@ class ErrorHandler():
         error = ErrorEntry(self.meta_owner(),errorEntry[0],self,*errorEntry[1:])
         self.valid = {GRAPH:self.graphError.omit,
                      ACTION:self.actionError.omit,
-                     FCURVE:self.fcurveError.omit}[error.type] and self.valid        
+                     FCURVE:self.fcurveError.omit,
+                     FILE:self.graphError.omit}[error.type] and self.valid        
         self.log.append(error)
     def logSolution(self,solution):
         self.log[-1].fix = solution
     def logUnsolved(self):
-        self[-1].fix("Failed to apply automated solution")
-        self[-1].unsolve()
+        self.log[-1].fix = "Failed to apply automated solution"
+        self.log[-1].unsolve()
         self.valid = False
     def verifyGraph(self):
         return self.valid

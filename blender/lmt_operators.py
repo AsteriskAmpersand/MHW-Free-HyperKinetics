@@ -248,7 +248,7 @@ class ClearEncoding(MappedActionOperator,bpy.types.Operator):
     bl_idname = "freehk.clear_buffer_quality"
     bl_label = "Clear Encoding Types"
     bl_options = {'REGISTER', 'PRESET', 'UNDO'}
-    bl_description = "Sets the encoding of all fcurves witthout a buffer on the action to the highest quality setting."
+    bl_description = "Sets the encoding of all fcurves to automatical detection."
     tetherless = True
     limit = bpy.props.BoolProperty(name = "Limit", default = True, options={'HIDDEN'} )
     def mappedOperator(self,armature,action):
@@ -259,7 +259,7 @@ class MaximizeQuality(MappedActionOperator,bpy.types.Operator):
     bl_idname = "freehk.maximize_buffer_quality"
     bl_label = "Max FCurve Encoding Quality"
     bl_options = {'REGISTER', 'PRESET', 'UNDO'}
-    bl_description = "Sets the encoding of all fcurves witthout a buffer on the action to the highest quality setting."
+    bl_description = "Sets the encoding of all fcurves without a buffer on the action to the highest quality setting."
     tetherless = True
     limit = bpy.props.BoolProperty(name = "Limit", default = True, options={'HIDDEN'} )
     def mappedOperator(self,armature,action):

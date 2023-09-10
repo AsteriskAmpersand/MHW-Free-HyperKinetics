@@ -376,7 +376,7 @@ class LMT():
         used = set()
         injection = {action.id:action for action in lmt.ActionHeaders}
         existent = {action.id:action for action in self.ActionHeaders}
-        if max(injection) >= self.entryCount():
+        if max(injection,default = 0) >= self.entryCount():
             raise KeyError("Injection IDs exceed entry Count")
         existent.update(injection)
         self.ActionHeaders = [existent[e] for e in sorted(existent)]

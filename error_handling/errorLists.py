@@ -16,6 +16,7 @@ idGen = intiter()
 GRAPH = 0
 ACTION = 1
 FCURVE = 2    
+FILE = 3
     
 from ..ui.HKIcons import pcoll
 
@@ -46,7 +47,11 @@ graphErrors = {"G_LOW_ENTRY_COUNT":("Output Node %s has lower Entry Count than m
                                         ["Disconnect incorrectly matched nodes",
                                          "Nodes list the type of connection they expect and also the type of connection they output."
                                          "Ensure the recieving end type matches the source's type."
-                                         ])               
+                                         ])   
+               }
+
+fileErrors = {"G_MASTER_FILE_ERROR":("Output Node's %s Injection Target File %s is invalid",
+                                  ["Select a valid injection target"])   
                }
 
 actionErrors = {"A_LMT_FRAME_COUNT_LOW":("Animation %s has fcurves with frames going beyond the animation's frame count",
@@ -66,7 +71,6 @@ fcurveErrors = {"F_LMT_DUPLICATE_FCURVE":("FCurve %s in Animation %s occurs more
                 "F_LMT_INVALID_ENCODING_TYPE":("FCurve %s in Animation %s has illegal type %d",
                                                ["FCurve Type must be a value in (0-7) or (11 to 15)",
                                                 "Specify a legal value or set it to 0 for automatic detection"]),
-                
                 "F_LMT_INVALID_ENCODING_NONROT":("FCurve %s in Animation %s has type %d which is reserved for rotations",
                                                ["Quaternion interpolation types and keys cannot be used with translations or scale",
                                                 "Change the transform encoding type to 0 for auto-detection or one of the non-quaternion types"]),                
@@ -169,6 +173,8 @@ keyframeErrors = {
                 }
 
 def mapCheck(key):
+    if key in fileErrors:
+        return fileErrors
     if key in graphErrors:
         return graphErrors
     if key in actionErrors:
@@ -179,6 +185,8 @@ def mapCheck(key):
         return keyframeErrors
     
 def typeCheck(key):
+    if key in fileErrors:
+        return FILE
     if key in graphErrors:
         return GRAPH
     if key in actionErrors:
@@ -188,8 +196,8 @@ def typeCheck(key):
     if key in keyframeErrors:
         return FCURVE
     
-error_map = {key:mapCheck(key) for key in sum(map(lambda x: list(x.keys()), [graphErrors, actionErrors, fcurveErrors, keyframeErrors]),[])}
-error_types = {key:typeCheck(key) for key in sum(map(lambda x: list(x.keys()), [graphErrors, actionErrors, fcurveErrors, keyframeErrors]),[])}
+error_map = {key:mapCheck(key) for key in sum(map(lambda x: list(x.keys()), [graphErrors, fileErrors, actionErrors, fcurveErrors, keyframeErrors]),[])}
+error_types = {key:typeCheck(key) for key in sum(map(lambda x: list(x.keys()), [graphErrors, fileErrors, actionErrors, fcurveErrors, keyframeErrors]),[])}
 
 
 #for key in sum(map(lambda x: list(x.keys()), [graphErrors, actionErrors, fcurveErrors, keyframeErrors]),[]):

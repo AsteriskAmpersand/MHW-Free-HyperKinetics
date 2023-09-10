@@ -158,15 +158,18 @@ class LMTEntryNode(FreeHKNode,Node):
         structure = self.basicStructure()
         #Stop if Graph error_handler found
         if not error_handler.verifyGraph():
-            return []
+            return None
         if timl:
             timl = next(iter(timl)).export(error_handler)
         if actionNodes:
             actionNode = next(iter(actionNodes)).export(error_handler)
-        structure = structure.extend(actionNode,timl)
+            if actionNode: 
+                structure = structure.extend(actionNode,timl)
+            else:
+                return None
         #Stop if FCurve or Action error_handler found
         if not error_handler.verifyAnimations():
-            return []  
+            return None
         self.cacheAdd(structure)
         return structure
 

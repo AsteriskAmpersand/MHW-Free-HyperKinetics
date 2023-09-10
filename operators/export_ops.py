@@ -12,6 +12,9 @@ from ..struct import TIML
 from ..blender.nodetree.freeHKNodeOps import LMTFILE,EFXFILE,TIMLFILE,FILE
 from ..blender.nodetree.freeHKNodes import globalCacheClear
 
+class FileError(Exception):
+    pass
+
 class TreeExporter(bpy.types.Operator):
     bl_idname = "freehk.export"
     bl_label = "Export MHW Free HK Tree (.timl/.efx/.lmt)"
@@ -41,22 +44,28 @@ class TreeExporter(bpy.types.Operator):
         nodeStructure = node.export()
         if node.inject:
             try:
-                masterFile = type(nodeStructure)().parseFile(node.filepath)
+                try:
+                    masterFile = type(nodeStructure)().parseFile(node.filepath)
+                except:
+                    raise FileError
                 masterFile.injectFile(nodeStructure)
                 nodeStructure = masterFile
             except IndexError:
                 node.error_handler.takeOwnership(node)
-                node.error_handler.append("G_INJECTION_ENTRY_COUNT",node.name,masterFile.entryCount())
-                node.error_handler.logUnsolved()        
+                node.error_handler.append(("G_INJECTION_ENTRY_COUNT",node.name,masterFile.entryCount()))
+                node.error_handler.logUnsolved()
+            except FileError:
+                node.error_handler.takeOwnership(node)
+                node.error_handler.append(("G_MASTER_FILE_ERROR",node.name,node.filepath))
+                node.error_handler.logUnsolved()
         if self.addon_props.output_log:
             node.error_handler.writeLog(node.filepath,self.addon_props.output_log_folder)
         node.error_handler.display()
         if node.error_handler.verifyExport():            
             filedata = nodeStructure.serialize()
-        
-        outpath = os.path.realpath(bpy.path.abspath(node.filepath))
-        with open(outpath,"wb") as outf:
-            outf.write(filedata)
+            outpath = os.path.realpath(bpy.path.abspath(node.filepath))
+            with open(outpath,"wb") as outf:
+                outf.write(filedata)
     
     def generateTIML(self,timlData):
         timl = TIML.TIML().construct()
