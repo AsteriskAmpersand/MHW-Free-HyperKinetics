@@ -141,6 +141,8 @@ class LMTTransform(EncodingObject, SynchronicityObject, InversionObject):
                     return False
                 else:
                     self.report("F_LMT_MISSING_BONE_FUNCTION")
+                    if self.error_handler.fcurveError.fix or self.fcurveError.omit:
+                        self.error_handler.logSolution("Transform omitted from export process")
                     return False
             #If there's a tiebreaker bone but it's not one of the choices
             if pbone.bone["boneFunction"] not in boneFunctions:                

@@ -37,6 +37,8 @@ class Visitable():
             nlevel = getattr(self,self.subiterable)
             if nlevel:
                 self.offset = nlevel[0].__selfOffset__
+            else:
+                self.offset = 0
             for l in nlevel:
                 if hasattr(l,"updateOffsets"):
                     l.updateOffsets()

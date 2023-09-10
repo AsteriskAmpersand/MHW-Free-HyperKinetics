@@ -183,7 +183,8 @@ class Cstruct():
         try:
             return typeOperator['serializer'](data[varName])
         except:
-            print ("%s: %s"%(str(varName),str(data[varName])))
+            print(data)
+            print ("\t%s: %s"%(str(varName),str(data[varName])))
             raise        
     def serialize(self, data):
         return b''.join([self.testSerialize(typeOperator,data,varName) for varName, typeOperator in self.struct.items()])

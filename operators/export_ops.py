@@ -61,7 +61,7 @@ class TreeExporter(bpy.types.Operator):
         if self.addon_props.output_log:
             node.error_handler.writeLog(node.filepath,self.addon_props.output_log_folder)
         node.error_handler.display()
-        if node.error_handler.verifyExport():            
+        if node.error_handler.verifyExport():
             filedata = nodeStructure.serialize()
             outpath = os.path.realpath(bpy.path.abspath(node.filepath))
             with open(outpath,"wb") as outf:
