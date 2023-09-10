@@ -56,7 +56,7 @@ class EncodingObject():
     def verifyCompatibility(self,encoding):
         if encoding in {1,2}:
             if not self.isReference():
-                return self.reportNonReference()
+                return self.reportNonReference(encoding)
             elif encoding == 1 and self.isRotation():
                 return self.reportRotation(encoding)
             elif encoding == 2 and not self.isRotation():
