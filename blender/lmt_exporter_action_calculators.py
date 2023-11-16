@@ -55,6 +55,8 @@ class EncodingObject():
         return self.reportEncoding("F_LMT_INVALID_ENCODING_ROT",encoding)
     def reportNonRotation(self,encoding):
         return self.reportEncoding("F_LMT_INVALID_ENCODING_NONROT",encoding)
+    def hasFrames(self):
+        return len(self.vector_keyframes) > 1
     def verifyCompatibility(self,encoding):
         if encoding in {1,2}:
             if not self.isReference():
@@ -62,13 +64,16 @@ class EncodingObject():
             elif encoding == 1 and self.isRotation():
                 return self.reportRotation(encoding)
             elif encoding == 2 and not self.isRotation():
-                return self.reporttNonRotation(encoding)        
-        elif encoding in {3,4,5}:
-            if self.isRotation():
-                return self.reportRotattion(encoding)            
-        elif encoding in {6,7,11,12,13,14,15}:
-            if not self.isRotation():
-                return self.reporttNonRotation(encoding)
+                return self.reportNonRotation(encoding)    
+        else:
+            if not self.hasFrames():
+                return self.reportReference(encoding)
+            if encoding in {3,4,5}:
+                if self.isRotation():
+                    return self.reportRotation(encoding)            
+            elif encoding in {6,7,11,12,13,14,15}:
+                if not self.isRotation():
+                    return self.reportNonRotation(encoding)
         return True
             
     def calculateValidateEncoding(self,tether):
@@ -179,18 +184,21 @@ class EncodingObject():
 
     
 class SynchronicityObject():
-    def calculatePotentialMissing(self,timingSet,frameCount):
+    def isReferenceProxy(self,timingSet):
+        return len(timingSet) == 1 or (len(timingSet) == 2 and self.isRoot())
+    def calculateMissingFrames(self,timingSet,frameCount):
         potentialMissingFrames = []
-        if self.isRoot():
-            if len(timingSet) == 1 and 0 in timingSet:
-                potentialMissingFrames+=[3]
-            elif len(timingSet) == 1 and frameCount+1 in timingSet:
-                potentialMissingFrames+=[0]
-            elif len(timingSet) != 2 or 0 not in timingSet or frameCount+1 not in timingSet:
-                potentialMissingFrames += [0,1,2,3]
-        else:
-            if not(len(timingSet) == 1 and 0 in timingSet):
-                potentialMissingFrames+=[0,1,2]
+        if self.missingSpecificFrame(timingSet,0,"F_LMT_MISSING_REFERENCE_FRAME"):
+            potentialMissingFrames.append(0)
+        if not self.isReferenceProxy(timingSet): 
+            if self.missingSpecificFrame(timingSet,1,"F_LMT_MISSING_FIRST_FRAME"):
+                potentialMissingFrames.append(1)
+            if self.missingSpecificFrame(timingSet,frameCount,"F_LMT_MISSING_LAST_FRAME"):
+                potentialMissingFrames.append(frameCount)
+                #TODO - Verify the last frame is actually a thing in all in-game animations
+        if self.isRoot():            
+            if self.missingSpecificFrame(timingSet,frameCount+1,"F_LMT_MISSING_BASIS_FRAME"):
+                        potentialMissingFrames.append(frameCount+1)
         return potentialMissingFrames
     def missingSpecificFrame(self,timingSet,frameVal,errtype):
         if frameVal not in timingSet:
@@ -198,10 +206,10 @@ class SynchronicityObject():
             if self.error_handler.fcurveError.fix or self.error_handler.fcurveError.omit:
                 self.error_handler.logSolution("Obtained Frame through Interpolation")
                 timingSet.add(frameVal)
-                return 1
+                return True
             else:
                 raise FreeHKError
-        return 0
+        return False
     def completeRawKeyframes(self,curve,timingSet,adjust):
         if curve.fcurve:
             if not curve.synthetic and len(curve.keyframe_points) < len(timingSet)-adjust:
@@ -224,10 +232,12 @@ class SynchronicityObject():
             for k in curve.keyframe_points:
                 timingSet.add(k.co[0])
         #Check Potential Missing Frames, track "extra frames"
-        adjust = 0
-        potentialMissingFrames = self.calculatePotentialMissing(timingSet,frameCount)                
-        frames = [0,1,frameCount,frameCount+1]
-        errs = ["F_LMT_MISSING_REFERENCE_FRAME","F_LMT_MISSING_FIRST_FRAME","F_LMT_MISSING_LAST_FRAME","F_LMT_MISSING_BASIS_FRAME"]        
+        missingFrames = self.calculateMissingFrames(timingSet,frameCount)
+        adjust = len(missingFrames)
+        timingSet.update(missingFrames)
+        #TODO - Error Indices
+        #TODO - High Priority (Unresolved):
+        #TODO - Spacing between frames has a maximum distance set by the encoding type, need to verify (and potentially resolve)
         
         #If ready to complete missing frames start process
         timingSet = sorted(list(timingSet))

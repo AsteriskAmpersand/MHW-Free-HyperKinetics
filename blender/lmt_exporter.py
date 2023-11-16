@@ -194,9 +194,13 @@ class LMTTransform(EncodingObject, SynchronicityObject, InversionObject):
         lerp = None
         buffer = []
         if self.buffered():
+            #if not self.isRoot():
+            #    print("bId :",self.boneFunction)
+            #    print("\t",'|'.join([str(t) for t,v in self.vector_keyframes]))
             prev,f = self.vector_keyframes[-1] if not self.isRoot() else self.vector_keyframes[-2]
             buffer = []
             if self.lerped():
+                #print(self.action, self.data_path)
                 mul,add = self.mul(),self.add()
                 lerp = Lmt.LMTBasis().construct({"mult":breakVector(mul),"add":breakVector(add)})
                 tf = lambda x: ((getattr(vec,x)-getattr(add,x))/getattr(mul,x)) if hasattr(vec,x) and getattr(mul,x) != 0  else 0   

@@ -192,7 +192,7 @@ class TIMLFileNode(Node, FreeHKOutputNode):
     inputName = "TIML Entry"
     inputStr = "TIML_Entry"
 
-#TODO - Basic structure is list of TIMLs
+
 class EFXFileNode(Node, FreeHKOutputNode):
     '''EFX Output Node'''
     entryCountError = "G_INJECTION_ENTRY_COUNT"

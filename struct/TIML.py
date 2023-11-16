@@ -39,6 +39,7 @@ class Visitable():
                 self.offset = nlevel[0].__selfOffset__
             else:
                 self.offset = 0
+                self.labelHash = 0
             for l in nlevel:
                 if hasattr(l,"updateOffsets"):
                     l.updateOffsets()

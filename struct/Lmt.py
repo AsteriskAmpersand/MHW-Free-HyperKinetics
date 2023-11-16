@@ -235,7 +235,7 @@ class LMT():
             #if (bone.usage,bone.boneId) in existing_ids:
             #    action.fold = action.frameCount + 1
             #    existing_ids[(bone.usage,bone.boneId)].fold = bone
-            #    if not blenderEntry: bones.append(bone)#TODO - Delete for plugin this is just for offset calculation
+            #    if not blenderEntry: bones.append(bone)#Delete for plugin this is just for offset calculation
             bones.append(bone)
             existing_ids[(bone.usage,bone.boneId)] = bone            
             if bone.boneId == -1:
@@ -394,6 +394,7 @@ def parseLMT(filepath,*args,**kwargs):
     return LMT.parseFile(filepath,*args,**kwargs)
 
 if __name__ in '__main__':
+    raise
     from LmtBuffers import Vector
     from mathutils import Quaternion
     import numpy as np
