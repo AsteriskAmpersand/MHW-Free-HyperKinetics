@@ -19,6 +19,7 @@ from .blender import lmt_tools
 from .blender import lmt_operators
 from .blender import binary_tools
 from .blender import binary_inputs
+from .blender import pl_tools
 from .operators import timl_io,timl_ops,lmt_io,export_ops
 from .operators import lmt_rig_ops
 #from .operators import freedomUnite_io
@@ -100,6 +101,7 @@ modules = [timl_controller,lmt_tools,
            freeHKActionNodes,freeHKDataNodes,freeHKFileNodes,
            timl_io,timl_ops,lmt_io,lmt_operators,export_ops,
            lmt_rig_ops,binary_tools,binary_inputs,freedomUniteAnim,
+           pl_tools
            #freedomUnite_io
            ]
 classes = []
