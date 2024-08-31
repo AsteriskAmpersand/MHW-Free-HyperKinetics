@@ -224,7 +224,7 @@ class DebugOptions():
         self.fcurve_error = addonOptions.fcurve_error
         self.action_error = addonOptions.action_error
         self.graph_error = addonOptions.graph_error
-        self.expor_hidden = True
+        self.export_hidden = True
 
 class DebugVerifier(ErrorHandler):
     def __init__(self,options):
